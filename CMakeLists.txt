@@ -56,8 +56,11 @@ add_subdirectory(common)
 # Robust coarse-matching stack (STATIC / header INTERFACE leaves under robust_rough/).
 add_subdirectory(robust_rough)
 
+# Fine / ICP refine stack (STATIC leaves under robust_refine/; needs matcher_tsl).
+add_subdirectory(robust_refine)
+
 # Umbrella INTERFACE for Session/foundation consumers: scan_register::scan_register
-# (robust_matcher is opt-in: link scan_register::robust_matcher explicitly.)
+# (refine / rough targets are opt-in: link scan_register::<target> explicitly.)
 add_library(scan_register INTERFACE)
 add_library(scan_register::scan_register ALIAS scan_register)
 target_link_libraries(scan_register INTERFACE

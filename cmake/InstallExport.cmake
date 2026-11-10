@@ -5,7 +5,7 @@
 #   full            — 全量库目标与头模块清单（模块落地后填写）。
 #   lidarstudio     — LidarStudio 产品白名单根目标链接闭包（模块落地后填写）。
 #
-# 已落地模块：common / file_system / logging。后续模块迁入后追加到对应清单。
+# 已落地：common / file_system / logging / robust_rough/* / robust_refine/*。
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -32,6 +32,10 @@ set(_SR_LIB_TARGETS_FULL
   teaser
   robin
   robust_matcher
+  basic_icp
+  fast_gicp
+  small_gicp
+  genz_icp
 )
 
 set(_SR_HEADER_MODULES_FULL
@@ -41,6 +45,10 @@ set(_SR_HEADER_MODULES_FULL
   teaser
   robin
   robust_matcher
+  basic_icp
+  fast_gicp
+  small_gicp
+  genz_icp
 )
 
 # Party：对外头文件模块（与库一并交付）
@@ -222,7 +230,9 @@ endif()
 
 foreach(_mod IN LISTS _SR_HEADER_MODULES)
   set(_SR_HDR_SRC "")
-  if(IS_DIRECTORY "${SCAN_REGISTER_INCLUDE_ROOT}/robust_rough/${_mod}")
+  if(IS_DIRECTORY "${SCAN_REGISTER_INCLUDE_ROOT}/robust_refine/${_mod}")
+    set(_SR_HDR_SRC "${SCAN_REGISTER_INCLUDE_ROOT}/robust_refine/${_mod}")
+  elseif(IS_DIRECTORY "${SCAN_REGISTER_INCLUDE_ROOT}/robust_rough/${_mod}")
     set(_SR_HDR_SRC "${SCAN_REGISTER_INCLUDE_ROOT}/robust_rough/${_mod}")
   elseif(IS_DIRECTORY "${SCAN_REGISTER_INCLUDE_ROOT}/${_mod}")
     set(_SR_HDR_SRC "${SCAN_REGISTER_INCLUDE_ROOT}/${_mod}")

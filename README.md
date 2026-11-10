@@ -20,6 +20,7 @@
 | [`file_system/`](file_system/) | 可移植文件系统与通配（SHARED） |
 | [`logging/`](logging/) | 进程内统一日志（SHARED，spdlog） |
 | [`robust_rough/`](robust_rough/) | 鲁棒粗匹配：`robust_matcher` / `teaser` / `robin` / `pmc` 等（**STATIC** / INTERFACE） |
+| [`robust_refine/`](robust_refine/) | 鲁棒精配：`basic_icp` / `small_gicp` / `genz_icp` / `fast_gicp`（**STATIC** / INTERFACE） |
 | [`cmake/`](cmake/) | 依赖探测、compat、`find_package(scan_register)` 安装导出 |
 | [`docs/`](docs/) | Hub/Spoke 字典与模块说明 |
 

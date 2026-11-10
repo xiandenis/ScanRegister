@@ -13,6 +13,8 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | robust_matcher | robin / matcher_* | 【鲁棒匹配器】(RobustMatcher) | 仓库内 | 鲁棒粗匹配主入口 |
 | robin | pmc / xenium | 【ROBIN 内点结构】 | 仓库内 | 图论内点与最大团 |
 | teaser | pmc / PCL / FLANN | 【TEASER 对齐】(TeaserAlign) | 仓库内/外部 | TEASER++ 鲁棒刚体配准 |
+| genz_icp | matcher_tsl / PCL / TBB | 【GenZ-ICP】(genz_icp) | 仓库内/外部 | 精配准后端之一 |
+| small_gicp / basic_icp / fast_gicp | Eigen / PCL / OpenMP | 精配 ICP 集合 | 仓库内/外部 | `robust_refine/` |
 
 ## 已登记模块
 
@@ -22,3 +24,4 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | file_system | 同上 | 同上 |
 | logging | 同上 | 同上 |
 | robust_matcher 等（`robust_rough/`） | [`dictionaries/鲁棒粗匹配_Dictionary.md`](dictionaries/鲁棒粗匹配_Dictionary.md) | [`modules/鲁棒粗匹配.md`](modules/鲁棒粗匹配.md) |
+| basic_icp 等（`robust_refine/`） | [`dictionaries/鲁棒精配_Dictionary.md`](dictionaries/鲁棒精配_Dictionary.md) | [`modules/鲁棒精配.md`](modules/鲁棒精配.md) |
