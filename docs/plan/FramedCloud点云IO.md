@@ -19,5 +19,6 @@
 
 ## 相关
 
-- 字典：[`../dictionaries/粗全局配准_Dictionary.md`](../dictionaries/粗全局配准_Dictionary.md)
+- 字典：[`../dictionaries/点云IO_Dictionary.md`](../dictionaries/点云IO_Dictionary.md)（公共 IO 领域；粗配准字典仅交叉引用）
+- 模块说明：[`../modules/点云IO.md`](../modules/点云IO.md)
 - WorkingFrame：[`../dictionaries/公共基础_Dictionary.md`](../dictionaries/公共基础_Dictionary.md)

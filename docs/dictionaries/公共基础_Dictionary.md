@@ -18,7 +18,8 @@
 
 | 调用方 | 被调用方 | 关键衔接点（标准中文命名 / 代码名） | 依赖类型 (仓库内/外部) | 一句话说明 |
 |--------|----------|--------------------------------------|------------------------|------------|
-| robust_global_reg / point_cloud_io | common / logging / file_system | Common / LogManager | 仓库内 | 粗配准（内存入口）与点云 I/O |
+| robust_global_reg | common / logging / file_system | Common / LogManager | 仓库内 | 粗配准内存入口 |
+| point_cloud_io | logging | LogManager | 仓库内 | 公共点云 IO（见点云 IO 字典） |
 | （待上层业务） | common / logging / file_system | — | 仓库内 | 业务模块迁入后回填 |
 
 ---
@@ -39,7 +40,7 @@
 | 6 | 三维随机工具 | Ddx::random | random_3d.hpp/.cpp | 公共 | 全局随机引擎与采样辅助 |
 | 7 | 内存代价模型 | MemCostModel | mem_cost_model.hpp/.cpp | 公共 | 峰值内存回归估计与磁盘持久化 |
 | 8 | 内存感知调度器 | MemAwareScheduler | mem_aware_scheduler.hpp/.cpp | 公共 | 按内存水位与代价模型调度任务 |
-| 9 | 局部工作坐标系 | WorkingFrame | working_frame.hpp | 公共 | 作业级原点 O 换系工具；IO 产出的可恢复原点在 FramedCloud.origin（见粗全局配准字典） |
+| 9 | 局部工作坐标系 | WorkingFrame | working_frame.hpp | 公共 | 作业级原点 O 换系工具；IO 产出的可恢复原点在 FramedCloud.origin（见点云 IO 字典） |
 | 10 | 站名自然序比较 | naturalNameLess | natural_name.hpp | 公共 | 数字段按数值、其余按字节序比较站名 |
 
 ### 文件内小算法条目

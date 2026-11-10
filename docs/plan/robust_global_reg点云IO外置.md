@@ -34,5 +34,6 @@
 ## 相关
 
 - 字典：[`../dictionaries/粗全局配准_Dictionary.md`](../dictionaries/粗全局配准_Dictionary.md)
+- 公共 IO：[`../dictionaries/点云IO_Dictionary.md`](../dictionaries/点云IO_Dictionary.md) / [`../modules/点云IO.md`](../modules/点云IO.md)
 - 模块：[`../modules/粗全局配准.md`](../modules/粗全局配准.md)
 - WorkingFrame：[`局部工作坐标系.md`](局部工作坐标系.md)
