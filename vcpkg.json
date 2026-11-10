@@ -1,7 +1,7 @@
 {
-  "name": "real-time-registration",
+  "name": "scan-register",
   "version": "2.0.2",
-  "description": "Semi-realtime point cloud registration library",
+  "description": "ScanRegister point-cloud library for terrestrial scan registration",
   "dependencies": [
     "eigen3",
     "tbb",

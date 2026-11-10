@@ -28,14 +28,8 @@ if(NOT TARGET flann::flann_cpp)
   endif()
 endif()
 
-include("${CMAKE_CURRENT_LIST_DIR}/real_time_registrationTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/scan_registerTargets.cmake")
 
-# Non-namespaced aliases matching in-tree target names.
-if(TARGET real_time_registration::real_time_manager AND NOT TARGET real_time_manager)
-  add_library(real_time_manager ALIAS real_time_registration::real_time_manager)
-endif()
-if(TARGET real_time_registration::real_time_registration AND NOT TARGET real_time_registration::real_time_registration_alias_guard)
-  # Umbrella already exported as real_time_registration::real_time_registration
-endif()
+# Non-namespaced aliases for in-tree target names (add as modules land).
 
-check_required_components(real_time_registration)
+check_required_components(scan_register)

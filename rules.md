@@ -47,12 +47,12 @@
 ## 阶段一：建立与维护全局索引字典 (Global Master Dictionary)
 
 > **本仓库文档布局（2026-06）**  
-> - **Hub**：[`docs/total.md`](docs/total.md) §1 索引 · [`docs/点云算法总览_Dictionary.md`](docs/点云算法总览_Dictionary.md) 互用速查（含「工程命名约定」：`real_time_registration_*` CMake/兼容宏）  
+> - **Hub**：[`docs/total.md`](docs/total.md) §1 索引 · [`docs/点云算法总览_Dictionary.md`](docs/点云算法总览_Dictionary.md) 互用速查（含「工程命名约定」：`scan_register_*` CMake/兼容宏）  
 > - **Spoke 详述**：[`docs/modules/`](docs/modules/README.md)（模块 API / 依赖）  
 > - **Spoke 字典**：[`docs/dictionaries/`](docs/dictionaries/README.md)（按领域分组的 `## 模块` 条目表；含粗全局配准 / 精配准等）  
 > - **计划归档**：[`docs/plan/`](docs/plan/)（实施/优化计划副本；计划确认或落地后必须写入）  
 > 新增算法时：先更新 Hub 互用速查与依赖边（若跨模块），再写入对应 `docs/dictionaries/<领域>_Dictionary.md`（含「模块相互依赖关系」）与 `docs/modules/<领域>.md`。  
-> 工程前缀约定：CMake 辅助与兼容宏统一使用 `real_time_registration_*` / `REAL_TIME_REGISTRATION_*`；勿与源码中历史 API 名（如 `matrix_to_south_string`）混淆。  
+> 工程前缀约定：CMake 辅助与兼容宏统一使用 `scan_register_*` / `SCAN_REGISTER_*`；CMake 包名 `scan_register`（`find_package(scan_register)`）。勿与源码中历史 API 名（如 `matrix_to_south_string`）混淆。  
 > 精配准领域：`fine_registration` → [`docs/dictionaries/精配准_Dictionary.md`](docs/dictionaries/精配准_Dictionary.md)；管理器侧接入状态以 [`实时配准管理_Dictionary.md`](docs/dictionaries/实时配准管理_Dictionary.md)「自动拼接」条目为准。
 
 ### 触发条件

@@ -20,10 +20,10 @@ using ssize_t = std::ptrdiff_t;
 #include <unistd.h>
 #endif
 
-#ifndef REAL_TIME_REGISTRATION_ALIGNED
+#ifndef SCAN_REGISTER_ALIGNED
 #if defined(_MSC_VER)
-#define REAL_TIME_REGISTRATION_ALIGNED(N) __declspec(align(N))
+#define SCAN_REGISTER_ALIGNED(N) __declspec(align(N))
 #else
-#define REAL_TIME_REGISTRATION_ALIGNED(N) __attribute__((aligned(N)))
+#define SCAN_REGISTER_ALIGNED(N) __attribute__((aligned(N)))
 #endif
 #endif

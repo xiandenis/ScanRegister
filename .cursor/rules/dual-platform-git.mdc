@@ -32,7 +32,7 @@ alwaysApply: true
 
 | 本机 OS | 算法库编译 | 「测试数据 / 测试实时配准」 | ROS 2 |
 |---------|------------|------------------------------|-------|
-| **Windows**（含在 `lidarstudio` 上开发） | `.\scripts\build_windows.ps1`（默认 install → `install_party\<Config>\`；`-Publish` → `third-party-library` 独立分支）/ VS + vcpkg | `build\bin\Release\real_time_manager_test.exe` | **不走本机 ROS2**；仅用户说「开发板」时用 `remote_dev.sh` |
+| **Windows**（含在 `lidarstudio` 上开发） | `.\scripts\build_windows.ps1`（默认 install → `install_party\<Config>\`；`-Publish` → `third-party-library` 独立分支）/ VS + vcpkg | `build\bin\Release\` 下测试 exe（模块迁入后） | **不走本机 ROS2**；仅用户说「开发板」时用 `remote_dev.sh` |
 | **Ubuntu / Linux** | `cmake -S . -B build && cmake --build build` | **走 ROS2**：`./ros2/test_ros2.sh …`（默认不开网页；要盯测再加 `--dashboard`） | **可以且应当**：`./ros2/build_ros2.sh` / colcon → `ros2_ws/` |
 | **开发板**（用户明确提） | — | `./remote_dev.sh test-ros2 …` | `./remote_dev.sh build-ros2` → `ros_ws_ssh/` |
 
@@ -48,8 +48,8 @@ alwaysApply: true
 
 | 场景 | Windows 正确做法 | 禁止 |
 |------|------------------|------|
-| 编译算法库 | `.\scripts\build_windows.ps1`（默认再 install → `<repo>\install_party\<Config>`，可用 `-Prefix` 改根；`-Scope full -Publish` 发到 `third-party-library.git` 分支 `real_time_registration`，tag `real_time_registration/vX.Y.Z`）或 `cmake --build build --config Release` | `wsl … cmake`、WSL 内 `build/` |
-| 「测试数据 / 测试实时配准」+ 数据/工程路径 | `build\bin\Release\real_time_manager_test.exe <数据> <工程>`（`PATH` 含同目录 `logging.dll`） | 在 Windows 本机用 WSL 跑 `ros2/test_ros2.sh` |
+| 编译算法库 | `.\scripts\build_windows.ps1`（默认再 install → `<repo>\install_party\<Config>`，可用 `-Prefix` 改根；`-Scope full -Publish` 发到 `third-party-library.git` 分支 `scan_register`，tag `scan_register/vX.Y.Z`）或 `cmake --build build --config Release` | `wsl … cmake`、WSL 内 `build/` |
+| 「测试数据 / 测试实时配准」+ 数据/工程路径 | `build\bin\Release\` 下测试 exe `<数据> <工程>`（`PATH` 含同目录动态库；模块迁入后） | 在 Windows 本机用 WSL 跑 `ros2/test_ros2.sh` |
 | 中文数据路径 | 用 `mklink /J` 建 ASCII junction 再测（PDAL 不认中文路径） | 为绕开路径问题改去 WSL |
 | ROS 2 | 仅「开发板」→ `remote_dev.sh` | 在 Windows 上假装有本机 ROS2 / 用 WSL 当本机 Ubuntu ROS2 |
 

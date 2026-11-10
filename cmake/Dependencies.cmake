@@ -1,6 +1,6 @@
-# Third-party dependencies for real_time_registration modules.
+# Third-party dependencies for scan_register modules.
 
-include(RealTimeRegistrationHelpers)
+include(ScanRegisterHelpers)
 
 find_package(Threads REQUIRED)
 # Eigen 5.x Config uses SameMajorVersion; requesting "3.3" rejects 5.x. Require >= 3.3 manually.
@@ -93,22 +93,21 @@ endif()
 
 find_package(PDAL REQUIRED)
 
-# RapidJSON (header-only; used by robust_global_reg / registration_type).
-# Prefer CMake package (vcpkg RapidJSONConfig) then fall back to find_path.
+# RapidJSON (header-only). Prefer CMake package (vcpkg RapidJSONConfig) then fall back to find_path.
 find_package(RapidJSON QUIET)
 if(RapidJSON_FOUND AND DEFINED RAPIDJSON_INCLUDE_DIRS)
-  set(REAL_TIME_REGISTRATION_RAPIDJSON_INCLUDE "${RAPIDJSON_INCLUDE_DIRS}")
+  set(SCAN_REGISTER_RAPIDJSON_INCLUDE "${RAPIDJSON_INCLUDE_DIRS}")
 else()
-  find_path(REAL_TIME_REGISTRATION_RAPIDJSON_INCLUDE
+  find_path(SCAN_REGISTER_RAPIDJSON_INCLUDE
     NAMES rapidjson/document.h
     PATH_SUFFIXES include
   )
 endif()
-if(NOT REAL_TIME_REGISTRATION_RAPIDJSON_INCLUDE)
+if(NOT SCAN_REGISTER_RAPIDJSON_INCLUDE)
   message(FATAL_ERROR "RapidJSON not found (need rapidjson/document.h)")
 endif()
 
-# OpenCV (used by fastreg_filter). Prefer opencv_world when present (vcpkg/MSVC);
+# OpenCV. Prefer opencv_world when present (vcpkg/MSVC);
 # otherwise synthesize an INTERFACE target from core/imgproc/imgcodecs.
 find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs)
 if(NOT TARGET opencv_world)
@@ -126,19 +125,19 @@ endif()
 find_package(spdlog REQUIRED)
 get_target_property(_spdlog_inc spdlog::spdlog INTERFACE_INCLUDE_DIRECTORIES)
 if(_spdlog_inc)
-  list(GET _spdlog_inc 0 REAL_TIME_REGISTRATION_SPDLOG_INCLUDE)
+  list(GET _spdlog_inc 0 SCAN_REGISTER_SPDLOG_INCLUDE)
 else()
-  set(REAL_TIME_REGISTRATION_SPDLOG_INCLUDE "")
+  set(SCAN_REGISTER_SPDLOG_INCLUDE "")
 endif()
 unset(_spdlog_inc)
 
-if(NOT TARGET real_time_registration_spdlog)
-  add_library(real_time_registration_spdlog INTERFACE)
-  add_library(real_time_registration_spdlog::real_time_registration_spdlog ALIAS real_time_registration_spdlog)
-  target_link_libraries(real_time_registration_spdlog INTERFACE spdlog::spdlog)
-  if(REAL_TIME_REGISTRATION_SPDLOG_INCLUDE)
-    target_include_directories(real_time_registration_spdlog INTERFACE
-      "$<BUILD_INTERFACE:${REAL_TIME_REGISTRATION_SPDLOG_INCLUDE}>"
+if(NOT TARGET scan_register_spdlog)
+  add_library(scan_register_spdlog INTERFACE)
+  add_library(scan_register_spdlog::scan_register_spdlog ALIAS scan_register_spdlog)
+  target_link_libraries(scan_register_spdlog INTERFACE spdlog::spdlog)
+  if(SCAN_REGISTER_SPDLOG_INCLUDE)
+    target_include_directories(scan_register_spdlog INTERFACE
+      "$<BUILD_INTERFACE:${SCAN_REGISTER_SPDLOG_INCLUDE}>"
     )
   endif()
 endif()
@@ -164,8 +163,8 @@ if(NOT TARGET flann::flann_cpp)
 endif()
 
 # Optional extra include roots for third-party headers (empty by default).
-if(NOT DEFINED REAL_TIME_REGISTRATION_THIRDPARTY_INCLUDES)
-  set(REAL_TIME_REGISTRATION_THIRDPARTY_INCLUDES "")
+if(NOT DEFINED SCAN_REGISTER_THIRDPARTY_INCLUDES)
+  set(SCAN_REGISTER_THIRDPARTY_INCLUDES "")
 endif()
 
 message(STATUS "Dependencies:")
@@ -174,7 +173,7 @@ message(STATUS "  Ceres   : ${Ceres_VERSION}")
 message(STATUS "  TBB     : found")
 message(STATUS "  PCL     : ${PCL_VERSION}")
 message(STATUS "  PDAL    : ${PDAL_VERSION_MAJOR}.${PDAL_VERSION_MINOR}.${PDAL_VERSION_PATCH}")
-message(STATUS "  RapidJSON: ${REAL_TIME_REGISTRATION_RAPIDJSON_INCLUDE}")
+message(STATUS "  RapidJSON: ${SCAN_REGISTER_RAPIDJSON_INCLUDE}")
 message(STATUS "  OpenCV  : ${OpenCV_VERSION}")
 message(STATUS "  spdlog  : found")
 message(STATUS "  FLANN   : found")

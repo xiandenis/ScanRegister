@@ -1,25 +1,25 @@
 # Shared helpers expected by module CMakeLists.txt files.
 
-set(REAL_TIME_REGISTRATION_COMPAT_HEADER
-  "${CMAKE_CURRENT_LIST_DIR}/real_time_registration_compat.hpp"
+set(SCAN_REGISTER_COMPAT_HEADER
+  "${CMAKE_CURRENT_LIST_DIR}/scan_register_compat.hpp"
   CACHE FILEPATH "Forced portability include for MSVC/POSIX"
 )
 
-function(real_time_registration_apply_compat target)
+function(scan_register_apply_compat target)
   if(NOT TARGET "${target}")
-    message(FATAL_ERROR "real_time_registration_apply_compat: target '${target}' does not exist")
+    message(FATAL_ERROR "scan_register_apply_compat: target '${target}' does not exist")
   endif()
 
   if(MSVC)
-    target_compile_options("${target}" PRIVATE "/FI${REAL_TIME_REGISTRATION_COMPAT_HEADER}")
+    target_compile_options("${target}" PRIVATE "/FI${SCAN_REGISTER_COMPAT_HEADER}")
   else()
-    target_compile_options("${target}" PRIVATE "-include${REAL_TIME_REGISTRATION_COMPAT_HEADER}")
+    target_compile_options("${target}" PRIVATE "-include${SCAN_REGISTER_COMPAT_HEADER}")
   endif()
 endfunction()
 
-function(real_time_registration_apply_openmp target)
+function(scan_register_apply_openmp target)
   if(NOT TARGET "${target}")
-    message(FATAL_ERROR "real_time_registration_apply_openmp: target '${target}' does not exist")
+    message(FATAL_ERROR "scan_register_apply_openmp: target '${target}' does not exist")
   endif()
 
   if(MSVC)

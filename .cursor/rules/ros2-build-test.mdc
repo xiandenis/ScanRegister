@@ -9,7 +9,7 @@ alwaysApply: true
 
 > **平台前提**（与 [`dual-platform-git.mdc`](dual-platform-git.mdc) 一致）：
 > - **Ubuntu / Linux 本机**：**可以且应当走 ROS2**（本节全部脚本）。「测试数据 / 测试实时配准」→ `./ros2/test_ros2.sh`。
-> - **Windows 本机**：不走本节；「测试数据」→ `real_time_manager_test.exe`；勿用 WSL 顶替 Ubuntu。
+> - **Windows 本机**：不走本节；「测试数据」→ Windows 测试 exe（模块迁入后）；勿用 WSL 顶替 Ubuntu。
 > - **开发板**（用户明确提）：`remote_dev.sh`（见下文）。
 
 ## 本机（Ubuntu / Linux · 走 ROS2）
@@ -38,13 +38,13 @@ alwaysApply: true
 
 默认测试数据文件夹下全部 `.las/.slas/.pcd/.ply`（不递归、按名排序、链式 `register_scan`）。先编译加 `--build`；节点已在跑用 `--no-launch`（此时需 `--node-log` 才能出效率表）。
 
-**节点生命周期**：测试结束后必须立刻关闭 `real_time_registration_node`（脚本已自动清理；手工联调结束也要停掉），避免残留节点干扰下次服务调用。站名默认用文件名去后缀（`--name-mode stem`）。报告网页与节点生命周期分离：`--dashboard` 测完保留网页。
+**节点生命周期**：测试结束后必须立刻关闭配准节点（如 `scan_register_node`；脚本已自动清理；手工联调结束也要停掉），避免残留节点干扰下次服务调用。站名默认用文件名去后缀（`--name-mode stem`）。报告网页与节点生命周期分离：`--dashboard` 测完保留网页。
 
 **效率汇报（强制）**：本机 `test_ros2.sh` 结束后也会自动打印 **EFFICIENCY REPORT**。向用户汇报时必须用 **配准报告与效率 Canvas**（见下方），不要只回 SUMMARY，也不要只贴 Markdown 大表。若开了 `--dashboard`，测前把网页 URL 发给用户。
 
 ## 开发板
 
-默认 SSH：`Laser@192.168.110.88`，远端仓库 `/home/Laser/ddx_work_spaces/real_time_registration`，产物 `ros_ws_ssh/`。工程目录建议：`/home/Laser/ddx_work_spaces/project/<工程名>`。
+默认 SSH：`Laser@192.168.110.88`，远端仓库 `/home/Laser/ddx_work_spaces/scan_register`，产物 `ros_ws_ssh/`。工程目录建议：`/home/Laser/ddx_work_spaces/project/<工程名>`。
 
 当用户说「开发板编译 ros2」「开发板编译」或等价含义时：
 
