@@ -27,3 +27,8 @@ using ssize_t = std::ptrdiff_t;
 #define SCAN_REGISTER_ALIGNED(N) __attribute__((aligned(N)))
 #endif
 #endif
+
+// Compatibility alias while migrating modules from the previous package name.
+#ifndef REAL_TIME_REGISTRATION_ALIGNED
+#define REAL_TIME_REGISTRATION_ALIGNED(N) SCAN_REGISTER_ALIGNED(N)
+#endif

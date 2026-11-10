@@ -22,12 +22,23 @@ set(_SR_LIB_TARGETS_FULL
   common
   file_system
   logging
+  scan_register
+  xenium
+  matcher_tsl
+  matcher_points
+  matcher_kdtree
+  matcher_hnswlib
+  pmc
+  robin
+  robust_matcher
 )
 
 set(_SR_HEADER_MODULES_FULL
   common
   file_system
   logging
+  robin
+  robust_matcher
 )
 
 # Party：对外头文件模块（与库一并交付）
@@ -37,11 +48,9 @@ set(_SR_HEADER_MODULES_PARTY
   logging
 )
 
-# Party：链接闭包根目标（存在时才收集）
+# Party：链接闭包根目标（伞目标拉起 common / file_system / logging）
 set(_SR_PARTY_ROOT_TARGETS
-  common
-  file_system
-  logging
+  scan_register
 )
 
 # Party：必须存在的 SHARED 库目标（装 .so/.dll + 对应头目录）
@@ -60,6 +69,7 @@ set(_SR_HEADER_MODULES_LIDARSTUDIO
 
 # LidarStudio：链接闭包根目标
 set(_SR_LIDARSTUDIO_ROOT_TARGETS
+  scan_register
   common
   file_system
   logging
@@ -209,18 +219,38 @@ else()
 endif()
 
 foreach(_mod IN LISTS _SR_HEADER_MODULES)
-  if(IS_DIRECTORY "${SCAN_REGISTER_INCLUDE_ROOT}/${_mod}")
-    install(DIRECTORY "${SCAN_REGISTER_INCLUDE_ROOT}/${_mod}/"
-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_mod}"
-      FILES_MATCHING
-        PATTERN "*.hpp"
-        PATTERN "*.h"
-        PATTERN "*.hxx"
-        PATTERN "*.inl"
-        PATTERN "CMakeLists.txt" EXCLUDE
-        PATTERN "*test*" EXCLUDE
-        PATTERN "*_test.*" EXCLUDE
-    )
+  set(_SR_HDR_SRC "")
+  if(IS_DIRECTORY "${SCAN_REGISTER_INCLUDE_ROOT}/robust_rough/${_mod}")
+    set(_SR_HDR_SRC "${SCAN_REGISTER_INCLUDE_ROOT}/robust_rough/${_mod}")
+  elseif(IS_DIRECTORY "${SCAN_REGISTER_INCLUDE_ROOT}/${_mod}")
+    set(_SR_HDR_SRC "${SCAN_REGISTER_INCLUDE_ROOT}/${_mod}")
+  endif()
+  if(_SR_HDR_SRC)
+    if(_mod STREQUAL "matcher_hnswlib")
+      # Public includes are <hnswlib/...>, not <matcher_hnswlib/...>.
+      if(IS_DIRECTORY "${_SR_HDR_SRC}/hnswlib")
+        install(DIRECTORY "${_SR_HDR_SRC}/hnswlib/"
+          DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/hnswlib"
+          FILES_MATCHING
+            PATTERN "*.hpp"
+            PATTERN "*.h"
+            PATTERN "*.hxx"
+            PATTERN "*.inl"
+        )
+      endif()
+    else()
+      install(DIRECTORY "${_SR_HDR_SRC}/"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_mod}"
+        FILES_MATCHING
+          PATTERN "*.hpp"
+          PATTERN "*.h"
+          PATTERN "*.hxx"
+          PATTERN "*.inl"
+          PATTERN "CMakeLists.txt" EXCLUDE
+          PATTERN "*test*" EXCLUDE
+          PATTERN "*_test.*" EXCLUDE
+      )
+    endif()
   endif()
 endforeach()
 

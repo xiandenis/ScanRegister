@@ -10,6 +10,8 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | logging | spdlog | spdlog::spdlog | 外部 | 日志后端 |
 | common | Eigen3 | Eigen::Matrix / Vector | 外部 | 矩阵与坐标变换 |
 | file_system | （无仓库内） | — | — | 独立文件系统工具 |
+| robust_matcher | robin / matcher_* | 【鲁棒匹配器】(RobustMatcher) | 仓库内 | 鲁棒粗匹配主入口 |
+| robin | pmc / xenium | 【ROBIN 内点结构】 | 仓库内 | 图论内点与最大团 |
 
 ## 已登记模块
 
@@ -18,3 +20,4 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | common | [`dictionaries/公共基础_Dictionary.md`](dictionaries/公共基础_Dictionary.md) | [`modules/公共基础.md`](modules/公共基础.md) |
 | file_system | 同上 | 同上 |
 | logging | 同上 | 同上 |
+| robust_matcher 等（`robust_rough/`） | [`dictionaries/鲁棒粗匹配_Dictionary.md`](dictionaries/鲁棒粗匹配_Dictionary.md) | [`modules/鲁棒粗匹配.md`](modules/鲁棒粗匹配.md) |

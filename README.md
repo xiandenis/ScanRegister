@@ -10,17 +10,25 @@
 
 ## 当前仓库状态
 
-根 `CMakeLists.txt` 尚未落地，整仓暂不可一键配置；已迁入基础模块与脚手架：
+根 [`CMakeLists.txt`](CMakeLists.txt) 已建立，可按 Preset / 常规 cmake 配置。已迁入基础模块：
 
 | 路径 | 内容 |
 |------|------|
+| [`CMakeLists.txt`](CMakeLists.txt) | 工程入口：`project(scan_register)`、依赖、子模块、install |
+| [`CMakePresets.json`](CMakePresets.json) | Windows VS2026 / clangd + vcpkg |
 | [`common/`](common/) | 公共工具、E57 几何、WorkingFrame、内存调度（SHARED） |
 | [`file_system/`](file_system/) | 可移植文件系统与通配（SHARED） |
 | [`logging/`](logging/) | 进程内统一日志（SHARED，spdlog） |
+| [`robust_rough/`](robust_rough/) | 鲁棒粗匹配：`robust_matcher` / `robin` / `pmc` 等（**STATIC** / INTERFACE） |
 | [`cmake/`](cmake/) | 依赖探测、compat、`find_package(scan_register)` 安装导出 |
 | [`docs/`](docs/) | Hub/Spoke 字典与模块说明 |
-| [`rules.md`](rules.md) | 文档生成、能力复用与全局登记 |
-| [`vcpkg.json`](vcpkg.json) | 第三方依赖清单（`name`: `scan-register`） |
+
+### 配置示例（Windows）
+
+```powershell
+cmake --preset windows-vs2026-vcpkg
+cmake --build build --config Release -j
+```
 
 后续模块：落地源码与 `CMakeLists.txt` 后，追加到 [`cmake/InstallExport.cmake`](cmake/InstallExport.cmake) 清单，并按 `rules.md` 登记字典。
 
@@ -36,7 +44,7 @@
 | 安装 Config | `lib/cmake/scan_register/` |
 | 模块产物默认 | **动态库（SHARED）**（见 [`.cursor/rules/shared-library-default.mdc`](.cursor/rules/shared-library-default.mdc)） |
 
-安装范围（`-Scope` / `SCAN_REGISTER_INSTALL_SCOPE`；模块清单当前为空）：
+安装范围（`-Scope` / `SCAN_REGISTER_INSTALL_SCOPE`）：
 
 | Scope | 含义 |
 |-------|------|

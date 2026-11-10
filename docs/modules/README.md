@@ -3,5 +3,6 @@
 | 文档 | 模块 |
 |------|------|
 | [`公共基础.md`](公共基础.md) | `common`、`file_system`、`logging` |
+| [`鲁棒粗匹配.md`](鲁棒粗匹配.md) | `robust_rough/`（`robust_matcher` 等） |
 
 字典条目见 [`../dictionaries/`](../dictionaries/)。
