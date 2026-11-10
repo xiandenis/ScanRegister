@@ -35,8 +35,8 @@ Session / party 面基础类型库；`VoxelSceneClass` 以本模块为权威（`
 
 | 序号 | 标准中文命名 | 核心代码函数/类名 | 来源 | 所属模块 (私有/公共/忽略) | 一句话简述 |
 |------|--------------|-------------------|------|---------------------------|------------|
-| 1 | 扫描信息 | ScanInfo | registration_type.hpp/.cpp | 公共 | 站名、路径、传感器位标志、全局矩阵 |
-| 2 | 测站帧 | LidarFrame | registration_type.hpp/.cpp | 公共 | 体素/Root/子体素与缓存目录 |
+| 1 | 扫描信息 | ScanInfo | registration_type.hpp/.cpp | 公共 | 站名、路径、传感器、全局矩阵、用户声明站心 |
+| 2 | 测站帧 | LidarFrame | registration_type.hpp/.cpp | 公共 | 体素/Root/子体素与缓存目录（缓存=站心系） |
 | 3 | 配准边结果 | AlignResult | registration_type.hpp/.cpp | 公共 | source→target 刚体、RMSE[m]、边权与信息阵 |
 | 4 | 测站图 | StationGraph | registration_type.hpp | 公共 | 顶点全局位姿 + 边 RMSE/相似度 |
 | 5 | 测站状态 | StationStatus | registration_type.hpp/.cpp | 公共 | 网页进度 phase / 耗时 / rms |
@@ -52,9 +52,12 @@ Session / party 面基础类型库；`VoxelSceneClass` 以本模块为权威（`
 
 | 序号 | 标准中文命名 | 核心代码函数/类名 | 所属模块 (私有/公共/忽略) | 一句话简述 |
 |------|--------------|-------------------|---------------------------|------------|
-| 11 | Root 体素描述 | VoxelRoot | 公共 | 角度深度筛选层路径与状态 |
-| 12 | 子体素描述 | SubVoxel | 公共 | 如 voxel_3 边长与点数 |
+| 11 | Root 体素描述 | VoxelRoot | 公共 | 角度深度筛选层路径与状态；PCD 为站心系 |
+| 12 | 子体素描述 | SubVoxel | 公共 | 如 voxel_3；缓存点云/法向为站心系 |
 | 13 | 状态位标志 | StateType / stateHas | 公共 | VALID/HAS_CALCU 等位标志，禁止裸 == VALID |
+| 16 | 站心声明 | has_station_origin_ / station_origin_ | 公共 | 用户声明文件系站心；禁推断；须经 LidarFrameIO 持久化 |
+
+**站心与缓存坐标系**：`station_origin_` 在**原始文件坐标系**；初始化后 Root/子体素 PCD 均为站心系（站心在原点），PCD 自身不带站心。下游必须同时持有 `LidarFrame`/`ScanInfo`。站心系相对阵折回文件系：\(M_{\mathrm{file}}=T(O_t)M_{\mathrm{station}}T(-O_s)\)（\(O\) 为站心，≠ `FramedCloud.origin`）。
 
 #### 2、配准边结果（AlignResult）
 

@@ -1,6 +1,7 @@
 #include "registration_initializer.hpp"
 
 #include <registration_type/lidar_frame_io.hpp>
+#include <Eigen/Core>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -56,11 +57,16 @@ static bool run_pipeline(bool use_root, Ddx::LidarFrame const& scan_info)
 	frame.name_ = scan_info.name_;
 	frame.lasFn_ = scan_info.lasFn_;
 	frame.info_folder_ = scan_info.info_folder_;
+	frame.has_station_origin_ = scan_info.has_station_origin_;
+	frame.station_origin_ = scan_info.station_origin_;
 
 	std::cout << "  --- use_root=" << use_root << " ---\n";
 	std::cout << "  name: " << frame.name_ << "\n";
 	std::cout << "  lasFn: " << frame.lasFn_ << "\n";
 	std::cout << "  info_folder: " << frame.info_folder_ << "\n";
+	std::cout << "  has_station_origin=" << frame.has_station_origin_
+	          << " station_origin=(" << frame.station_origin_.x() << ", "
+	          << frame.station_origin_.y() << ", " << frame.station_origin_.z() << ")\n";
 
 	if (!init.initalState(frame, {3, 10}, true)) {
 		std::cerr << "  initalState failed\n";
@@ -81,6 +87,7 @@ static bool run_pipeline(bool use_root, Ddx::LidarFrame const& scan_info)
 	check((frame.state_ & Ddx::HAS_CALCU) == Ddx::HAS_CALCU, "frame state should be HAS_CALCU");
 	check(frame.voxel_size_ > 0.0, "voxel_size should be positive");
 	check(frame.point_number_ >= 10, "point_number should reflect loaded cloud");
+	check(frame.has_station_origin_, "station origin declaration should persist");
 
 	for (auto const& voxel : frame.subvoxel_vec_) {
 		check((voxel.state_ & Ddx::HAS_CALCU) == Ddx::HAS_CALCU, "subvoxel should be computed");
@@ -106,10 +113,18 @@ static bool run_pipeline(bool use_root, Ddx::LidarFrame const& scan_info)
 		check(frame.getCloudPath("Root") == frame.lasFn_, "root cloud path should be lasFn");
 	}
 
+	// Station origin must survive LidarFrameIO with the station-frame caches.
+	std::string const info_path = frame.getInfoPath();
+	Ddx::LidarFrame loaded;
+	check(Ddx::LidarFrameIO::loadLidarFrame(info_path, loaded), "reload LidarFrame JSON");
+	check(loaded.has_station_origin_, "JSON roundtrip has_station_origin");
+	check((loaded.station_origin_ - frame.station_origin_).norm() < 1e-9,
+	      "JSON roundtrip station_origin");
+
 	std::cout << "  point_number=" << frame.point_number_
 	          << " voxel_size=" << frame.voxel_size_
 	          << " root_pts=" << frame.root_.point_number_
-	          << " info=" << frame.getInfoPath() << "\n";
+	          << " info=" << info_path << "\n";
 	return true;
 }
 
@@ -119,7 +134,33 @@ static Ddx::LidarFrame make_scan_info_from_slas(fs::path const& slas_path, fs::p
 	frame.name_ = slas_path.stem().string();
 	frame.lasFn_ = slas_path.string();
 	frame.info_folder_ = (info_root / frame.name_).string();
+	// Real stand-scan inputs are assumed station-centered in file CRS unless caller overrides.
+	frame.has_station_origin_ = true;
+	frame.station_origin_ = Eigen::Vector3d::Zero();
 	return frame;
+}
+
+static bool run_undeclared_station_origin_case(fs::path const& work_dir, fs::path const& las_path)
+{
+	std::cout << "  --- undeclared station_origin (expect fail) ---\n";
+	Ddx::LidarFrame frame;
+	frame.name_ = "no_station";
+	frame.lasFn_ = las_path.string();
+	frame.info_folder_ = (work_dir / "info_undeclared").string();
+	frame.has_station_origin_ = false;
+	fs::create_directories(frame.info_folder_);
+
+	Ddx::RegistrationInitializer init;
+	if (!init.initalState(frame, {3, 10}, true)) {
+		std::cerr << "  initalState failed unexpectedly\n";
+		return false;
+	}
+	if (init.initializd(frame, true)) {
+		std::cerr << "  initializd should reject undeclared station_origin\n";
+		return false;
+	}
+	std::cout << "  undeclared station_origin rejected as expected\n";
+	return true;
 }
 
 static int run_synthetic_test(fs::path const& work_dir)
@@ -140,6 +181,8 @@ static int run_synthetic_test(fs::path const& work_dir)
 	scan.name_ = "test_frame";
 	scan.lasFn_ = las_path.string();
 	scan.info_folder_ = (work_dir / "info").string();
+	scan.has_station_origin_ = true;
+	scan.station_origin_ = Eigen::Vector3d::Zero();
 
 	int scenario_failures = 0;
 	if (!run_pipeline(true, scan)) {
@@ -148,6 +191,10 @@ static int run_synthetic_test(fs::path const& work_dir)
 
 	scan.info_folder_ = (work_dir / "info_no_root").string();
 	if (!run_pipeline(false, scan)) {
+		++scenario_failures;
+	}
+
+	if (!run_undeclared_station_origin_case(work_dir, las_path)) {
 		++scenario_failures;
 	}
 
@@ -221,5 +268,11 @@ int main(int argc, char* argv[])
 		return run_synthetic_test(arg1);
 	}
 
-	return run_real_scan_test(default_slas, default_info_root, false);
+	fs::path const default_synth =
+#ifdef _WIN32
+		L"build\\tmp_registration_initializer_test";
+#else
+		"build/tmp_registration_initializer_test";
+#endif
+	return run_synthetic_test(default_synth);
 }

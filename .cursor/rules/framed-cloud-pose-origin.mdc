@@ -75,9 +75,18 @@ M_{\mathrm{world}} = T(O_t)\,M_{\mathrm{loc}}\,T(-O_s)
 2. 不能只丢 `.cloud` 却扔掉 `origin`；有 init 文件/参数时必须与当前点云坐标系一致。
 3. 作业级 `WorkingFrame` API 未落地前，多云默认 **A（以 \(O_s\) 为作业原点 rebase）**，init/结果都按 A 变换。
 
+## 与测站站心（ScanInfo.station_origin_）的区别
+
+- `FramedCloud.origin`：IO 首有效点，只为 float 局部化。
+- `ScanInfo.station_origin_`：用户声明的**测站原点**（文件系）；`registration_initializer` 折系  
+  \(p_{\mathrm{station}}=p_{\mathrm{local}}+O_{\mathrm{framed}}-O_{\mathrm{station}}\) 后，Root/子体素缓存均为站心系。  
+  站心系相对阵折回文件系同形：\(M_{\mathrm{file}}=T(O_t)M_{\mathrm{station}}T(-O_s)\)，此处 \(O\) 是站心，**不是** `FramedCloud.origin`。  
+  缓存 PCD 不带站心；必须经 `LidarFrame`/`ScanInfo` 贯穿。
+
 ## 反例
 
 - 局部点 + 世界系 `M_init` 直接 `align`（精配准必炸或漂）。
 - 局部 `M_loc` 直接当世界系 `T` 写出。
 - 以为「都是小坐标了就不用管 origin / init」。
 - 用 LAS header offset 代替 `FramedCloud.origin` 做系变换。
+- 把 `FramedCloud.origin` 当成测站站心，或只拷贝站心系 PCD 却丢掉 `station_origin_`。

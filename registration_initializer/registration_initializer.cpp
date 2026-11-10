@@ -105,6 +105,14 @@ using pcl_type::NormalPtr;
 			return false;
 		}
 
+		// 站心必须用户声明；禁止从文件猜测。折系后 Root/子体素缓存均为站心系。
+		if (!frame.has_station_origin_) {
+			LOG_ERROR(
+				" {} has_station_origin_ is false; declare station_origin_ in file CRS before init ",
+				frame.name_);
+			return false;
+		}
+
 		{
 			std::error_code ec;
 			std::filesystem::create_directories(frame.info_folder_, ec);
@@ -119,12 +127,13 @@ using pcl_type::NormalPtr;
 				LOG_WARN(" {} load point cloud fail! ", frame.name_);
 				return false;
 			}
-			// Station-centered radial / angle-grid paths need file-frame XYZ (local + origin).
+			// p_station = local + FramedCloud.origin - station_origin_ (file CRS).
 			Eigen::Vector3d const& o = framed.origin;
+			Eigen::Vector3d const& s = frame.station_origin_;
 			for (auto& p : framed.cloud.points) {
-				p.x = static_cast<float>(static_cast<double>(p.x) + o.x());
-				p.y = static_cast<float>(static_cast<double>(p.y) + o.y());
-				p.z = static_cast<float>(static_cast<double>(p.z) + o.z());
+				p.x = static_cast<float>(static_cast<double>(p.x) + o.x() - s.x());
+				p.y = static_cast<float>(static_cast<double>(p.y) + o.y() - s.y());
+				p.z = static_cast<float>(static_cast<double>(p.z) + o.z() - s.z());
 			}
 			*m_last_cloud = std::move(framed.cloud);
 		}

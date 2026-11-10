@@ -34,6 +34,12 @@ struct ScanInfo
 	Eigen::Vector3d gps_;			// GPS / 地理坐标（设备约定；非本库配准坐标系）
 	int angle_resolution_;			// 角分辨率编码；0=无；SLS 常见 3/6/12/24
 	Eigen::Matrix4d global_matrix_;	// 世界←测站 4×4；平移单位 [m]
+	/// 用户是否已声明站心。false → registration_initializer 拒绝，禁止从文件推断。
+	bool has_station_origin_ = false;
+	/// 站心在原始点云文件坐标系下的位置 [m]。仅 has_station_origin_ 时有效。
+	/// 初始化后缓存点云均为站心系；折回文件系依赖本字段，必须随 LidarFrame 贯穿。
+	/// ≠ FramedCloud.origin（IO float 局部化），≠ global_matrix_ 平移。
+	Eigen::Vector3d station_origin_ = Eigen::Vector3d::Zero();
 
 	ScanInfo();
 };
@@ -57,10 +63,11 @@ inline bool stateIsValid(StateType s) { return stateHas(s, VALID); }
 inline bool stateIsProcessing(StateType s) { return stateHas(s, PROCESSING); }
 inline bool stateIsInitial(StateType s) { return s == INITIAL; }
 
+/// Root 缓存点云为站心系（站心在原点）；坐标系语义绑 ScanInfo.station_origin_，PCD 自身不携带站心。
 struct VoxelRoot
 {
 	std::string name_;			// 名称（仅作标记，不参与路径拼接）
-	std::string cloud_path_;	// 点云完整路径（非空时原样使用，不参与拼接）
+	std::string cloud_path_;	// 点云完整路径（非空时原样使用，不参与拼接）；站心系
 	std::string normal_path_;	// 法向量完整路径（预留扩展；当前 Root 流程不写 Root_n.pcd）
 	StateType state_;			// 状态
 	int point_number_;			// 点数
@@ -69,6 +76,7 @@ struct VoxelRoot
 	VoxelRoot();
 };
 
+/// 子体素缓存点云/法向为站心系；须与 LidarFrame/ScanInfo 的站心字段同生命周期。
 struct SubVoxel
 {
 	StateType state_;		// 状态
@@ -101,6 +109,7 @@ struct LidarFrame : public ScanInfo
 	VoxelSceneClass voxel_scene_class_;
 	/// 初始化缓存目录。由 StationInitialize 按 lasFn_ 写入，不来自 ScanInfo。
 	std::string info_folder_;
+	/// Root / 子体素 PCD 均为站心系；读缓存必须同时持有本帧站心字段，禁止只拿 PCD 裸用。
 	VoxelRoot root_;						// Root 体素（角度深度筛选层，与子体素分离）
 	std::vector<SubVoxel> subvoxel_vec_;	// 子体素
 
