@@ -21,6 +21,7 @@
 
 | 调用方 | 被调用方 | 关键衔接点（标准中文命名 / 代码名） | 依赖类型 (仓库内/外部) | 一句话说明 |
 |--------|----------|--------------------------------------|------------------------|------------|
+| registration_initializer | small_gicp | KdTree TBB 法向 | 仓库内 | 默认 NormalEstimateMethod::SmallGicpTbb |
 | （待精配准上层） | basic_icp / small_gicp / fast_gicp / genz_icp | — | 仓库内 | FineRegistration 等迁入后回填 |
 
 ---

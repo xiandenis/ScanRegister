@@ -9,6 +9,7 @@
 |------|----------|
 | [`公共基础_Dictionary.md`](公共基础_Dictionary.md) | `common`、`file_system`、`logging`、`graph` |
 | [`配准类型_Dictionary.md`](配准类型_Dictionary.md) | `registration_type`（ScanInfo / LidarFrame / AlignResult） |
+| [`配准初始化_Dictionary.md`](配准初始化_Dictionary.md) | `registration_initializer`（Root / 子体素 / 法向 / 分辨率） |
 | [`点云IO_Dictionary.md`](点云IO_Dictionary.md) | `point_cloud_io`（公共 FramedCloud 读写） |
 | [`鲁棒粗匹配_Dictionary.md`](鲁棒粗匹配_Dictionary.md) | `robust_rough/` 下 `robust_matcher`、`robin`、`pmc`、`teaser`、`matcher_*`、`xenium` |
 | [`鲁棒精配_Dictionary.md`](鲁棒精配_Dictionary.md) | `robust_refine/` 下 `basic_icp`、`fast_gicp`、`small_gicp`、`genz_icp` |

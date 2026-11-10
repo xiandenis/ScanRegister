@@ -22,6 +22,7 @@ Session / party 面基础类型库；`VoxelSceneClass` 以本模块为权威（`
 |--------|----------|--------------------------------------|------------------------|------------|
 | scan_register（伞） | registration_type | ScanInfo / LidarFrame / AlignResult | 仓库内 | party 面随伞目标导出 |
 | resolution_estimate | registration_type | 【体素场景类】(VoxelSceneClass) | 仓库内 | 分位数曲率调制场景提示 |
+| registration_initializer | registration_type | LidarFrame / VoxelSceneClass | 仓库内 | 测站初始化写回帧与场景类 |
 | （待上层 Session / 位姿图） | registration_type | 【测站帧】/【配准边结果】IO | 仓库内 | 业务接入后回填 |
 
 ---

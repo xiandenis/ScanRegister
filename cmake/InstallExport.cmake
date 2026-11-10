@@ -8,7 +8,8 @@
 # 已落地：common / file_system / logging / graph / registration_type /
 #         point_cloud_io / fastreg_filter / global_matrix_file / depth_map_tool /
 #         octree / overlap_estimation / resolution_estimate /
-#         robust_rough/* / robust_refine/* / robust_global_reg。
+#         robust_rough/* / robust_refine/* / registration_initializer /
+#         robust_global_reg。
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -48,6 +49,7 @@ set(_SR_LIB_TARGETS_FULL
   octree
   overlap_estimation
   resolution_estimate
+  registration_initializer
   robust_global_reg
 )
 
@@ -71,6 +73,7 @@ set(_SR_HEADER_MODULES_FULL
   octree
   overlap_estimation
   resolution_estimate
+  registration_initializer
   robust_global_reg
 )
 

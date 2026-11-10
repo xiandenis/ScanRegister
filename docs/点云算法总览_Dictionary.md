@@ -30,6 +30,7 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | overlap_estimation | PCL / Eigen / OpenMP | 【体素重叠估计】/【配准重叠子集提取】 | 外部 | 点云重叠度量与子集抽取（INTERFACE） |
 | resolution_estimate | logging / registration_type / PCL / Eigen | 【分辨率估计】/【分位数分辨率估计】 | 仓库内/外部 | 站心径向深度 → 推荐体素（SHARED） |
 | resolution_estimate_test | point_cloud_io | 【FramedCloud】+ origin 折回站心 | 仓库内 | 站心 LAS 估分辨率前还原文件系 |
+| registration_initializer | registration_type / point_cloud_io / octree / resolution_estimate / small_gicp | 【配准初始化器】 | 仓库内 | 测站 Root+Medoid+法向+体素分辨率（SHARED） |
 | WorkingFrame（common） | FramedCloud.origin | 【作业系 / 可恢复原点】 | 仓库内 | 作业级 O 与每云 origin 分层；见位姿折回规则 |
 
 ## 已登记模块
@@ -41,6 +42,7 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | logging | 同上 | 同上 |
 | **graph** | 同上 | 同上 |
 | **registration_type** | [`dictionaries/配准类型_Dictionary.md`](dictionaries/配准类型_Dictionary.md) | [`modules/配准类型.md`](modules/配准类型.md) |
+| **registration_initializer** | [`dictionaries/配准初始化_Dictionary.md`](dictionaries/配准初始化_Dictionary.md) | [`modules/配准初始化.md`](modules/配准初始化.md) |
 | **point_cloud_io** | [`dictionaries/点云IO_Dictionary.md`](dictionaries/点云IO_Dictionary.md) | [`modules/点云IO.md`](modules/点云IO.md) |
 | robust_matcher 等（`robust_rough/`） | [`dictionaries/鲁棒粗匹配_Dictionary.md`](dictionaries/鲁棒粗匹配_Dictionary.md) | [`modules/鲁棒粗匹配.md`](modules/鲁棒粗匹配.md) |
 | basic_icp 等（`robust_refine/`） | [`dictionaries/鲁棒精配_Dictionary.md`](dictionaries/鲁棒精配_Dictionary.md) | [`modules/鲁棒精配.md`](modules/鲁棒精配.md) |

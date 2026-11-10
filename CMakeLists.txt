@@ -68,6 +68,9 @@ add_subdirectory(robust_rough)
 # Fine / ICP refine stack (STATIC leaves under robust_refine/; needs matcher_tsl).
 add_subdirectory(robust_refine)
 
+# Station init (needs small_gicp normals + resolution_estimate + octree Medoid).
+add_subdirectory(registration_initializer)
+
 # Coarse global registration (needs robust_matcher + point_cloud_io).
 add_subdirectory(robust_global_reg)
 

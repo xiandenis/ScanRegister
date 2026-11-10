@@ -26,6 +26,7 @@
 | robust_global_reg（仅测试侧） | point_cloud_io | 同上 | 仓库内 | 库本身**不**链 IO；测试读盘后 `run` |
 | genz_icp_pair 等 | point_cloud_io | 同上 | 仓库内 | 读盘后对 init/结果做 origin 系变换 |
 | resolution_estimate_test | point_cloud_io | 同上 | 仓库内 | 站心 LAS：load 后 `local+origin` 再估径向深度 |
+| registration_initializer | point_cloud_io | 同上 | 仓库内 | 测站初始化：load 后折回站心再 Root/分辨率 |
 
 ---
 
