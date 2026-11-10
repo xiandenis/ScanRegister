@@ -23,6 +23,8 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | fastreg_filter | logging / OpenCV / Eigen / OpenMP | 【全景深度差分滤波】/【空间透视差分滤波】 | 仓库内/外部 | 深度图邻域差分统计异常/重叠率（STATIC） |
 | global_matrix_file | common / logging / RapidJSON | 【全局位姿文件读写】(GlobalMatrixFileIO) | 仓库内/外部 | 多站全局位姿 JSON loading/saving（STATIC） |
 | depth_map_tool | common / OpenCV / PCL / TBB | 【深度图工具】(DepthMapTool) | 仓库内/外部 | 点云→全景深度与格式转换（STATIC） |
+| octree | PCL / Eigen / TBB | 【体素真 Medoid 索引下采样】等 | 外部 | 哈希体素 Medoid / FastOctree / 中心近邻（INTERFACE） |
+| overlap_estimation | PCL / Eigen / OpenMP | 【体素重叠估计】/【配准重叠子集提取】 | 外部 | 点云重叠度量与子集抽取（INTERFACE） |
 | WorkingFrame（common） | FramedCloud.origin | 【作业系 / 可恢复原点】 | 仓库内 | 作业级 O 与每云 origin 分层；见位姿折回规则 |
 
 ## 已登记模块
@@ -40,3 +42,5 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | **fastreg_filter** | [`dictionaries/FastReg滤波_Dictionary.md`](dictionaries/FastReg滤波_Dictionary.md) | [`modules/FastReg滤波.md`](modules/FastReg滤波.md) |
 | **global_matrix_file** | [`dictionaries/全局位姿文件_Dictionary.md`](dictionaries/全局位姿文件_Dictionary.md) | [`modules/全局位姿文件.md`](modules/全局位姿文件.md) |
 | **depth_map_tool** | [`dictionaries/深度图工具_Dictionary.md`](dictionaries/深度图工具_Dictionary.md) | [`modules/深度图工具.md`](modules/深度图工具.md) |
+| **octree** | [`dictionaries/八叉树_Dictionary.md`](dictionaries/八叉树_Dictionary.md) | [`modules/八叉树.md`](modules/八叉树.md) |
+| **overlap_estimation** | [`dictionaries/重叠估计_Dictionary.md`](dictionaries/重叠估计_Dictionary.md) | [`modules/重叠估计.md`](modules/重叠估计.md) |

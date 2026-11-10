@@ -23,6 +23,8 @@
 | [`fastreg_filter/`](fastreg_filter/) | FastReg 深度图差分滤波（**STATIC**：全景 / 空间透视） |
 | [`global_matrix_file/`](global_matrix_file/) | 多站全局位姿 JSON 读写（**STATIC**） |
 | [`depth_map_tool/`](depth_map_tool/) | 全景深度图生成与格式转换（**STATIC**） |
+| [`octree/`](octree/) | 哈希体素 Medoid / FastOctree / 中心近邻八叉树（INTERFACE） |
+| [`overlap_estimation/`](overlap_estimation/) | 体素重叠估计与配准重叠子集提取（INTERFACE） |
 | [`robust_rough/`](robust_rough/) | 鲁棒粗匹配：`robust_matcher` / `teaser` / `robin` / `pmc` 等（**STATIC** / INTERFACE） |
 | [`robust_refine/`](robust_refine/) | 鲁棒精配：`basic_icp` / `small_gicp` / `genz_icp` / `fast_gicp`（**STATIC** / INTERFACE） |
 | [`point_cloud_io/`](point_cloud_io/) | 点云多格式 I/O（SHARED；由调用方/测试链接） |

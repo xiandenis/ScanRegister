@@ -10,5 +10,7 @@
 | [`FastReg滤波.md`](FastReg滤波.md) | `fastreg_filter`（深度图差分滤波） |
 | [`全局位姿文件.md`](全局位姿文件.md) | `global_matrix_file`（多站全局位姿 JSON） |
 | [`深度图工具.md`](深度图工具.md) | `depth_map_tool`（全景深度生成与格式转换） |
+| [`八叉树.md`](八叉树.md) | `octree`（Medoid / FastOctree / 中心近邻） |
+| [`重叠估计.md`](重叠估计.md) | `overlap_estimation`（体素重叠 / 配准子集） |
 
 字典条目见 [`../dictionaries/`](../dictionaries/)。
