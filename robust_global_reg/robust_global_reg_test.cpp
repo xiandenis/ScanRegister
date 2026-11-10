@@ -96,22 +96,38 @@ int wmain(int argc, wchar_t* argv[])
 		return 1;
 	}
 
-	pcl::PointCloud<pcl::PointXYZ> src_cloud;
-	pcl::PointCloud<pcl::PointXYZ> tgt_cloud;
-	if (Ddx::point_cloud_io::load(source_file, src_cloud) != 0)
+	Ddx::point_cloud_io::FramedCloud<pcl::PointXYZ> src_framed;
+	Ddx::point_cloud_io::FramedCloud<pcl::PointXYZ> tgt_framed;
+	if (Ddx::point_cloud_io::load(source_file, src_framed) != 0)
 	{
 		std::cerr << "failed to load source\n";
 		return 1;
 	}
-	if (Ddx::point_cloud_io::load(target_file, tgt_cloud) != 0)
+	if (Ddx::point_cloud_io::load(target_file, tgt_framed) != 0)
 	{
 		std::cerr << "failed to load target\n";
 		return 1;
 	}
 
+	// Job-level shared frame (deferred API): rebase target into source FramedCloud.origin.
+	{
+		const Eigen::Vector3d delta = tgt_framed.origin - src_framed.origin;
+		for (auto& p : tgt_framed.cloud.points)
+		{
+			p.x = static_cast<float>(static_cast<double>(p.x) + delta.x());
+			p.y = static_cast<float>(static_cast<double>(p.y) + delta.y());
+			p.z = static_cast<float>(static_cast<double>(p.z) + delta.z());
+		}
+		tgt_framed.origin = src_framed.origin;
+	}
+	std::cout << "shared origin (source): (" << src_framed.origin.x() << ", "
+	          << src_framed.origin.y() << ", " << src_framed.origin.z() << ")\n";
+	std::cout << "src points: " << src_framed.cloud.size()
+	          << "  tgt points: " << tgt_framed.cloud.size() << "\n";
+
 	std::vector<Eigen::Vector3f> src_vec;
 	std::vector<Eigen::Vector3f> tgt_vec;
-	if (!cloud_to_vec(src_cloud, src_vec) || !cloud_to_vec(tgt_cloud, tgt_vec))
+	if (!cloud_to_vec(src_framed.cloud, src_vec) || !cloud_to_vec(tgt_framed.cloud, tgt_vec))
 	{
 		std::cerr << "empty cloud after load\n";
 		return 1;

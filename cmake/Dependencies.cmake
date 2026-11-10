@@ -91,7 +91,7 @@ if(NOT TARGET pcl_surface)
   endif()
 endif()
 
-find_package(PDAL REQUIRED)
+# PDAL removed from point_cloud_io (slow path); may be re-added later for .laz / exotic LAS.
 
 # RapidJSON (header-only). Prefer CMake package (vcpkg RapidJSONConfig) then fall back to find_path.
 find_package(RapidJSON QUIET)
@@ -172,7 +172,7 @@ message(STATUS "  Eigen3  : ${Eigen3_VERSION}")
 message(STATUS "  Ceres   : ${Ceres_VERSION}")
 message(STATUS "  TBB     : found")
 message(STATUS "  PCL     : ${PCL_VERSION}")
-message(STATUS "  PDAL    : ${PDAL_VERSION_MAJOR}.${PDAL_VERSION_MINOR}.${PDAL_VERSION_PATCH}")
+message(STATUS "  PDAL    : not linked (removed from point_cloud_io)")
 message(STATUS "  RapidJSON: ${SCAN_REGISTER_RAPIDJSON_INCLUDE}")
 message(STATUS "  OpenCV  : ${OpenCV_VERSION}")
 message(STATUS "  spdlog  : found")

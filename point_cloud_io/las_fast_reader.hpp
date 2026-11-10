@@ -2,9 +2,6 @@
 
 #include "point_cloud_io.hpp"
 
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-
 #include <cstdint>
 #include <string>
 
@@ -35,17 +32,12 @@ int read_las_public_header(const std::string& file_path, LasPublicHeader& header
 bool las_fast_eligible(const std::string& file_path, const LasPublicHeader& header);
 
 /**
- * @brief Fast uncompressed LAS loader (point record formats 0–3, 6–8).
- *        Does not use PDAL. LAZ / waveform formats 4/5/9/10 are rejected.
- *        Peak strategy: allocate PCL cloud first; Windows maps the point block
- *        (no private full-file raw buffer); other platforms / mmap failure use
- *        record-aligned ~256 MiB chunked fread.
+ * @brief Fast uncompressed LAS loader into FramedCloud (formats 0–3, 6–8).
+ *        World = scale*i + header_offset; origin = first valid world point;
+ *        cloud stores float(world - origin).
  */
-int load_las_fast(const std::string& file_path, pcl::PointCloud<pcl::PointXYZ>& cloud,
-                  bool subtract_header_offset = true);
-int load_las_fast(const std::string& file_path, pcl::PointCloud<pcl::PointXYZI>& cloud,
-                  bool subtract_header_offset = true);
-int load_las_fast(const std::string& file_path, pcl::PointCloud<pcl::PointXYZRGB>& cloud,
-                  bool subtract_header_offset = true);
+int load_las_fast(const std::string& file_path, FramedCloud<pcl::PointXYZ>& framed);
+int load_las_fast(const std::string& file_path, FramedCloud<pcl::PointXYZI>& framed);
+int load_las_fast(const std::string& file_path, FramedCloud<pcl::PointXYZRGB>& framed);
 
 }  // namespace Ddx::point_cloud_io

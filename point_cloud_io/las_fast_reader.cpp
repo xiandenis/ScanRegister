@@ -21,7 +21,6 @@
 namespace Ddx::point_cloud_io {
 namespace {
 
-/** Target raw window for portable chunked fread (record-aligned). Large enough for SSD. */
 constexpr std::size_t kChunkBytesTarget = 256ull * 1024ull * 1024ull;
 
 template <typename T>
@@ -48,7 +47,6 @@ bool read_file_prefix(const std::string& file_path, std::vector<std::uint8_t>& b
 	buf.resize(n);
 	in.read(reinterpret_cast<char*>(buf.data()), static_cast<std::streamsize>(n));
 	const auto got = static_cast<std::size_t>(in.gcount());
-	// LAS 1.2 public header is 227 bytes; 1.4 extras sit later. Short files are valid.
 	if (got < 227) {
 		LOG_ERROR("las_fast: failed reading header from {}", file_path);
 		return false;
@@ -113,8 +111,6 @@ int parse_public_header(const std::vector<std::uint8_t>& buf, LasPublicHeader& h
 	return 0;
 }
 
-/** RGB field byte offset within point record; -1 if none.
- *  Legacy: 2@20, 3@28. LAS 1.4: 7@30, 8@30 (NIR follows RGB). */
 int rgb_field_offset(std::uint8_t point_format)
 {
 	switch (point_format) {
@@ -130,17 +126,41 @@ int rgb_field_offset(std::uint8_t point_format)
 	}
 }
 
+void world_xyz_from_record(const std::uint8_t* rec, LasPublicHeader const& header, double& x,
+                           double& y, double& z)
+{
+	const std::int32_t xi = read_le<std::int32_t>(rec + 0);
+	const std::int32_t yi = read_le<std::int32_t>(rec + 4);
+	const std::int32_t zi = read_le<std::int32_t>(rec + 8);
+	x = xi * header.scale_x + header.offset_x;
+	y = yi * header.scale_y + header.offset_y;
+	z = zi * header.scale_z + header.offset_z;
+}
+
+bool find_origin_in_records(const std::uint8_t* base, std::uint64_t count, std::uint16_t rec_len,
+                            LasPublicHeader const& header, Eigen::Vector3d& origin)
+{
+	for (std::uint64_t i = 0; i < count; ++i) {
+		double x = 0, y = 0, z = 0;
+		world_xyz_from_record(base + i * rec_len, header, x, y, z);
+		if (is_valid_origin_candidate(x, y, z)) {
+			origin = Eigen::Vector3d(x, y, z);
+			return true;
+		}
+	}
+	return false;
+}
+
 template <typename PointT>
-void decode_records(const std::uint8_t* base, std::uint64_t count, std::uint64_t index0,
-                    std::uint16_t rec_len, LasPublicHeader const& header, double ox, double oy,
-                    double oz, int rgb_off, bool file_has_color,
-                    pcl::PointCloud<PointT>& cloud)
+void decode_records_local(const std::uint8_t* base, std::uint64_t count, std::uint64_t index0,
+                          std::uint16_t rec_len, LasPublicHeader const& header,
+                          Eigen::Vector3d const& origin, int rgb_off, bool file_has_color,
+                          pcl::PointCloud<PointT>& cloud)
 {
 	for (std::uint64_t i = 0; i < count; ++i) {
 		const std::uint8_t* rec = base + i * rec_len;
-		const std::int32_t xi = read_le<std::int32_t>(rec + 0);
-		const std::int32_t yi = read_le<std::int32_t>(rec + 4);
-		const std::int32_t zi = read_le<std::int32_t>(rec + 8);
+		double wx = 0, wy = 0, wz = 0;
+		world_xyz_from_record(rec, header, wx, wy, wz);
 		const std::uint16_t intensity = read_le<std::uint16_t>(rec + 12);
 
 		std::uint8_t r = 0;
@@ -153,22 +173,111 @@ void decode_records(const std::uint8_t* base, std::uint64_t count, std::uint64_t
 		}
 
 		PointT& pt = cloud.points[static_cast<std::size_t>(index0 + i)];
-		detail::assign_from_las(
-		    pt, static_cast<float>(xi * header.scale_x + header.offset_x - ox),
-		    static_cast<float>(yi * header.scale_y + header.offset_y - oy),
-		    static_cast<float>(zi * header.scale_z + header.offset_z - oz),
-		    static_cast<float>(intensity), file_has_color, r, g, b);
+		detail::assign_from_las(pt, static_cast<float>(wx - origin.x()),
+		                        static_cast<float>(wy - origin.y()),
+		                        static_cast<float>(wz - origin.z()),
+		                        static_cast<float>(intensity), file_has_color, r, g, b);
 	}
 }
 
+template <typename PointT>
+int load_las_fast_chunked(const std::string& file_path, LasPublicHeader const& header,
+                          FramedCloud<PointT>& framed)
+{
+	const std::uint64_t n = header.point_count;
+	const std::uint16_t rec_len = header.point_data_record_length;
+	const std::uint64_t bytes_needed =
+	    static_cast<std::uint64_t>(header.offset_to_point_data) + n * rec_len;
+
+	std::ifstream in(file_path, std::ios::binary | std::ios::ate);
+	if (!in) {
+		LOG_ERROR("las_fast: cannot open {}", file_path);
+		return -1;
+	}
+	const auto file_size = static_cast<std::uint64_t>(in.tellg());
+	if (file_size < bytes_needed) {
+		LOG_ERROR("las_fast: file size {} < expected point block end {}", file_size,
+		          bytes_needed);
+		return -1;
+	}
+
+	const int rgb_off = rgb_field_offset(header.point_data_record_format);
+	const bool file_has_color =
+	    rgb_off >= 0 && rec_len >= static_cast<std::uint16_t>(rgb_off + 6);
+
+	const std::uint64_t total_point_bytes = n * static_cast<std::uint64_t>(rec_len);
+	std::size_t chunk_bytes = kChunkBytesTarget;
+	if (chunk_bytes < rec_len) {
+		chunk_bytes = rec_len;
+	}
+	chunk_bytes = (chunk_bytes / rec_len) * rec_len;
+	if (chunk_bytes == 0) {
+		chunk_bytes = rec_len;
+	}
+	if (static_cast<std::uint64_t>(chunk_bytes) > total_point_bytes) {
+		chunk_bytes = static_cast<std::size_t>(total_point_bytes);
+	}
+
+	std::vector<std::uint8_t> chunk(chunk_bytes);
+	in.seekg(static_cast<std::streamoff>(header.offset_to_point_data), std::ios::beg);
+
+	Eigen::Vector3d origin = Eigen::Vector3d::Zero();
+	bool found_origin = false;
+	std::uint64_t points_done = 0;
+	while (points_done < n && !found_origin) {
+		const std::uint64_t remaining = n - points_done;
+		const std::size_t this_records = static_cast<std::size_t>(
+		    std::min<std::uint64_t>(remaining, chunk_bytes / rec_len));
+		const std::size_t this_bytes = this_records * rec_len;
+		in.read(reinterpret_cast<char*>(chunk.data()),
+		        static_cast<std::streamsize>(this_bytes));
+		if (!in || static_cast<std::size_t>(in.gcount()) != this_bytes) {
+			LOG_ERROR("las_fast: failed reading point records from {}", file_path);
+			return -1;
+		}
+		if (find_origin_in_records(chunk.data(), this_records, rec_len, header, origin)) {
+			found_origin = true;
+		}
+		points_done += this_records;
+	}
+	if (!found_origin) {
+		LOG_ERROR("las_fast: no valid origin candidate in {}", file_path);
+		return -1;
+	}
+
+	framed.origin = origin;
+	framed.cloud.clear();
+	framed.cloud.points.resize(static_cast<std::size_t>(n));
+	framed.cloud.width = static_cast<std::uint32_t>(n);
+	framed.cloud.height = 1;
+	framed.cloud.is_dense = true;
+
+	in.clear();
+	in.seekg(static_cast<std::streamoff>(header.offset_to_point_data), std::ios::beg);
+	points_done = 0;
+	while (points_done < n) {
+		const std::uint64_t remaining = n - points_done;
+		const std::size_t this_records = static_cast<std::size_t>(
+		    std::min<std::uint64_t>(remaining, chunk_bytes / rec_len));
+		const std::size_t this_bytes = this_records * rec_len;
+		in.read(reinterpret_cast<char*>(chunk.data()),
+		        static_cast<std::streamsize>(this_bytes));
+		if (!in || static_cast<std::size_t>(in.gcount()) != this_bytes) {
+			LOG_ERROR("las_fast: failed reading point records from {}", file_path);
+			framed.cloud.clear();
+			return -1;
+		}
+		decode_records_local(chunk.data(), this_records, points_done, rec_len, header, origin,
+		                     rgb_off, file_has_color, framed.cloud);
+		points_done += this_records;
+	}
+	return 0;
+}
+
 #ifdef _WIN32
-/**
- * Map the point-record byte range (not a private heap copy of the whole block).
- * Peak PrivateUsage ≈ PCL cloud only; sequential decode is typically as fast as one-shot fread.
- */
 template <typename PointT>
 bool try_load_las_fast_mmap(const std::string& file_path, LasPublicHeader const& header,
-                            bool subtract_header_offset, pcl::PointCloud<PointT>& cloud)
+                            FramedCloud<PointT>& framed)
 {
 	const std::uint64_t n = header.point_count;
 	const std::uint16_t rec_len = header.point_data_record_length;
@@ -195,7 +304,6 @@ bool try_load_las_fast_mmap(const std::string& file_path, LasPublicHeader const&
 		return false;
 	}
 
-	// MapViewOfFile offsets must be multiples of allocation granularity (typically 64 KiB).
 	SYSTEM_INFO sysinfo{};
 	GetSystemInfo(&sysinfo);
 	const std::uint64_t gran = sysinfo.dwAllocationGranularity
@@ -215,23 +323,31 @@ bool try_load_las_fast_mmap(const std::string& file_path, LasPublicHeader const&
 		return false;
 	}
 
-	const double ox = subtract_header_offset ? header.offset_x : 0.0;
-	const double oy = subtract_header_offset ? header.offset_y : 0.0;
-	const double oz = subtract_header_offset ? header.offset_z : 0.0;
 	const int rgb_off = rgb_field_offset(header.point_data_record_format);
 	const bool file_has_color =
 	    rgb_off >= 0 && rec_len >= static_cast<std::uint16_t>(rgb_off + 6);
 
-	cloud.clear();
-	cloud.points.resize(static_cast<std::size_t>(n));
-	cloud.width = static_cast<std::uint32_t>(n);
-	cloud.height = 1;
-	cloud.is_dense = true;
-
 	const std::uint8_t* base =
 	    static_cast<const std::uint8_t*>(view) + static_cast<std::size_t>(view_delta);
-	decode_records(base, n, /*index0=*/0, rec_len, header, ox, oy, oz, rgb_off, file_has_color,
-	               cloud);
+
+	Eigen::Vector3d origin = Eigen::Vector3d::Zero();
+	if (!find_origin_in_records(base, n, rec_len, header, origin)) {
+		LOG_ERROR("las_fast: no valid origin candidate in {}", file_path);
+		UnmapViewOfFile(view);
+		CloseHandle(mapping);
+		CloseHandle(file);
+		return false;
+	}
+
+	framed.origin = origin;
+	framed.cloud.clear();
+	framed.cloud.points.resize(static_cast<std::size_t>(n));
+	framed.cloud.width = static_cast<std::uint32_t>(n);
+	framed.cloud.height = 1;
+	framed.cloud.is_dense = true;
+
+	decode_records_local(base, n, /*index0=*/0, rec_len, header, origin, rgb_off, file_has_color,
+	                     framed.cloud);
 
 	UnmapViewOfFile(view);
 	CloseHandle(mapping);
@@ -241,78 +357,7 @@ bool try_load_las_fast_mmap(const std::string& file_path, LasPublicHeader const&
 #endif
 
 template <typename PointT>
-int load_las_fast_chunked(const std::string& file_path, LasPublicHeader const& header,
-                          bool subtract_header_offset, pcl::PointCloud<PointT>& cloud)
-{
-	const std::uint64_t n = header.point_count;
-	const std::uint16_t rec_len = header.point_data_record_length;
-	const std::uint64_t bytes_needed =
-	    static_cast<std::uint64_t>(header.offset_to_point_data) + n * rec_len;
-
-	std::ifstream in(file_path, std::ios::binary | std::ios::ate);
-	if (!in) {
-		LOG_ERROR("las_fast: cannot open {}", file_path);
-		return -1;
-	}
-	const auto file_size = static_cast<std::uint64_t>(in.tellg());
-	if (file_size < bytes_needed) {
-		LOG_ERROR("las_fast: file size {} < expected point block end {}", file_size,
-		          bytes_needed);
-		return -1;
-	}
-
-	const double ox = subtract_header_offset ? header.offset_x : 0.0;
-	const double oy = subtract_header_offset ? header.offset_y : 0.0;
-	const double oz = subtract_header_offset ? header.offset_z : 0.0;
-	const int rgb_off = rgb_field_offset(header.point_data_record_format);
-	const bool file_has_color =
-	    rgb_off >= 0 && rec_len >= static_cast<std::uint16_t>(rgb_off + 6);
-
-	cloud.clear();
-	cloud.points.resize(static_cast<std::size_t>(n));
-	cloud.width = static_cast<std::uint32_t>(n);
-	cloud.height = 1;
-	cloud.is_dense = true;
-
-	const std::uint64_t total_point_bytes = n * static_cast<std::uint64_t>(rec_len);
-	std::size_t chunk_bytes = kChunkBytesTarget;
-	if (chunk_bytes < rec_len) {
-		chunk_bytes = rec_len;
-	}
-	chunk_bytes = (chunk_bytes / rec_len) * rec_len;
-	if (chunk_bytes == 0) {
-		chunk_bytes = rec_len;
-	}
-	if (static_cast<std::uint64_t>(chunk_bytes) > total_point_bytes) {
-		chunk_bytes = static_cast<std::size_t>(total_point_bytes);
-	}
-
-	std::vector<std::uint8_t> chunk(chunk_bytes);
-	in.seekg(static_cast<std::streamoff>(header.offset_to_point_data), std::ios::beg);
-
-	std::uint64_t points_done = 0;
-	while (points_done < n) {
-		const std::uint64_t remaining = n - points_done;
-		const std::size_t this_records = static_cast<std::size_t>(
-		    std::min<std::uint64_t>(remaining, chunk_bytes / rec_len));
-		const std::size_t this_bytes = this_records * rec_len;
-		in.read(reinterpret_cast<char*>(chunk.data()),
-		        static_cast<std::streamsize>(this_bytes));
-		if (!in || static_cast<std::size_t>(in.gcount()) != this_bytes) {
-			LOG_ERROR("las_fast: failed reading point records from {}", file_path);
-			cloud.clear();
-			return -1;
-		}
-		decode_records(chunk.data(), this_records, points_done, rec_len, header, ox, oy, oz,
-		               rgb_off, file_has_color, cloud);
-		points_done += this_records;
-	}
-	return 0;
-}
-
-template <typename PointT>
-int load_las_fast_impl(const std::string& file_path, pcl::PointCloud<PointT>& cloud,
-                       bool subtract_header_offset)
+int load_las_fast_impl(const std::string& file_path, FramedCloud<PointT>& framed)
 {
 	LasPublicHeader header;
 	if (read_las_public_header(file_path, header) != 0) {
@@ -325,12 +370,12 @@ int load_las_fast_impl(const std::string& file_path, pcl::PointCloud<PointT>& cl
 	}
 
 #ifdef _WIN32
-	if (try_load_las_fast_mmap(file_path, header, subtract_header_offset, cloud)) {
+	if (try_load_las_fast_mmap(file_path, header, framed)) {
 		return 0;
 	}
 	LOG_WARN("las_fast: mmap path failed for {}; falling back to chunked fread", file_path);
 #endif
-	return load_las_fast_chunked(file_path, header, subtract_header_offset, cloud);
+	return load_las_fast_chunked(file_path, header, framed);
 }
 
 }  // namespace
@@ -349,29 +394,23 @@ bool las_fast_eligible(const std::string& file_path, const LasPublicHeader& head
 	if (file_extension(file_path) == "laz") {
 		return false;
 	}
-	// Uncompressed point records we can decode without PDAL:
-	//   0–3: LAS 1.2 legacy; 6–8: LAS 1.4 (XYZ/Intensity layout compatible; no waveform).
-	// Reject 4/5/9/10 (waveform) — still need PDAL or a dedicated path.
 	const std::uint8_t fmt = header.point_data_record_format;
 	return fmt <= 3 || (fmt >= 6 && fmt <= 8);
 }
 
-int load_las_fast(const std::string& file_path, pcl::PointCloud<pcl::PointXYZ>& cloud,
-                  bool subtract_header_offset)
+int load_las_fast(const std::string& file_path, FramedCloud<pcl::PointXYZ>& framed)
 {
-	return load_las_fast_impl(file_path, cloud, subtract_header_offset);
+	return load_las_fast_impl(file_path, framed);
 }
 
-int load_las_fast(const std::string& file_path, pcl::PointCloud<pcl::PointXYZI>& cloud,
-                  bool subtract_header_offset)
+int load_las_fast(const std::string& file_path, FramedCloud<pcl::PointXYZI>& framed)
 {
-	return load_las_fast_impl(file_path, cloud, subtract_header_offset);
+	return load_las_fast_impl(file_path, framed);
 }
 
-int load_las_fast(const std::string& file_path, pcl::PointCloud<pcl::PointXYZRGB>& cloud,
-                  bool subtract_header_offset)
+int load_las_fast(const std::string& file_path, FramedCloud<pcl::PointXYZRGB>& framed)
 {
-	return load_las_fast_impl(file_path, cloud, subtract_header_offset);
+	return load_las_fast_impl(file_path, framed);
 }
 
 }  // namespace Ddx::point_cloud_io

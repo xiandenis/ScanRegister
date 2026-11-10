@@ -1,0 +1,83 @@
+---
+description: FramedCloud 局部配准：初始矩阵与结果矩阵都必须相对 origin 做系变换
+alwaysApply: true
+---
+
+# FramedCloud 配准位姿与原点折回
+
+IO 契约：[`point_cloud_io/framed_cloud.hpp`](point_cloud_io/framed_cloud.hpp)；规格 [`docs/superpowers/specs/2026-11-10-framed-cloud-io-design.md`](docs/superpowers/specs/2026-11-10-framed-cloud-io-design.md)。  
+作业系：见 [`working-frame.mdc`](working-frame.mdc)。
+
+## 白话文（必须记住）
+
+1. 读盘时**不论大/小坐标**，都减掉该云第一个有效点得到 `origin`，热路径用**局部点云**配准。  
+2. **结果矩阵**：局部系求出的 `M_loc` 对外前必须把 source / target 的 `origin` 折回世界系，使  
+
+\[
+\tilde{O}_t \approx M_{\mathrm{world}}\,\tilde{O}_s
+\]
+
+（`target_origin ≈ M_world * source_origin`。）  
+3. **初始矩阵**（精配准等：`source`、`target`、`M_init`）：`M_init` 若是**世界系**下「源→目标」的猜测，而点云已是局部 `FramedCloud`，则进 `align` **之前**必须把 `M_init` 变到与点云相同的局部系；**禁止**世界系 `M_init` 直接喂给局部点。
+
+## 符号
+
+- 源：局部 \(p'_s\)，`origin` \(O_s\)；\(p_s = p'_s + O_s\)
+- 目标：局部 \(p'_t\)，`origin` \(O_t\)；\(p_t = p'_t + O_t\)
+- \(T(o)=\begin{bmatrix}I & o\\0&1\end{bmatrix}\) 纯平移；\(M=\begin{bmatrix}R & t\\0&1\end{bmatrix}\)
+- 约定：\(M\) 把 **source 点变到 target 系**（\(p_t \approx M\,p_s\)）
+
+## 1. 初始矩阵：世界系 → 局部系（进求解前）
+
+输入 `M_init_world`（相对未减原点的世界/文件绝对坐标）。点已是 `FramedCloud` 局部点时：
+
+### B. 各云仍用各自 `origin`（未 rebase）
+
+\[
+M_{\mathrm{init,loc}} = T(-O_t)\,M_{\mathrm{init,world}}\,T(O_s)
+\]
+
+即 \(R\) 不变，\(t_{\mathrm{loc}} = t_{\mathrm{world}} + R\,O_s - O_t\)。
+
+### A. 已 rebase 到同一作业原点 \(O\)（推荐，常取 \(O_s\)）
+
+\[
+M_{\mathrm{init,loc}} = T(-O)\,M_{\mathrm{init,world}}\,T(O)
+\]
+
+即 \(t_{\mathrm{loc}} = t_{\mathrm{world}} + R\,O - O\)。
+
+典型入口：精配准工具 / `genz_icp_pair` 等「source 路径 + target 路径 + init matrix」。
+
+## 2. 结果矩阵：局部系 → 世界系（写出 / 对接前）
+
+### A. 同一作业原点 \(O\) 上配准
+
+\[
+M_{\mathrm{world}} = T(O)\,M_{\mathrm{loc}}\,T(-O)
+\]
+
+\(t_{\mathrm{world}} = t + O - R\,O\)。
+
+### B. 各云各自 `origin` 上配准
+
+\[
+M_{\mathrm{world}} = T(O_t)\,M_{\mathrm{loc}}\,T(-O_s)
+\]
+
+\(t_{\mathrm{world}} = t + O_t - R\,O_s\)。
+
+往返一致：对同一套 \(O_s,O_t\)（或作业 \(O\)），「世界→局部」与「局部→世界」互为逆合成。
+
+## 实现约束
+
+1. `load` → `FramedCloud` →（可选 rebase）→ **先变换 `M_init`** → 配准 → **再折回 `M_world`**；全程保留 \(O_s,O_t\)（或作业 \(O\)）。
+2. 不能只丢 `.cloud` 却扔掉 `origin`；有 init 文件/参数时必须与当前点云坐标系一致。
+3. 作业级 `WorkingFrame` API 未落地前，多云默认 **A（以 \(O_s\) 为作业原点 rebase）**，init/结果都按 A 变换。
+
+## 反例
+
+- 局部点 + 世界系 `M_init` 直接 `align`（精配准必炸或漂）。
+- 局部 `M_loc` 直接当世界系 `T` 写出。
+- 以为「都是小坐标了就不用管 origin / init」。
+- 用 LAS header offset 代替 `FramedCloud.origin` 做系变换。

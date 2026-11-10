@@ -68,13 +68,19 @@ static void print_matrix(std::string const& title, Eigen::Matrix4d const& matrix
   std::cout << "South: " << Ddx::Common::matrix_to_south_string(matrix) << "\n";
 }
 
-static bool load_slas_subtract_offset(
-    std::string const& path, pcl::PointCloud<pcl::PointXYZ>& cloud, double& load_ms)
+static bool load_slas_framed(std::string const& path, pcl::PointCloud<pcl::PointXYZ>& cloud,
+                             Eigen::Vector3d& origin, double& load_ms)
 {
   const auto t0 = std::chrono::steady_clock::now();
-  const int rc = Ddx::point_cloud_io::load_slas(path, cloud, /*subtract_header_offset=*/true);
+  Ddx::point_cloud_io::FramedCloud<pcl::PointXYZ> framed;
+  const int rc = Ddx::point_cloud_io::load_slas(path, framed);
   load_ms = elapsed_ms(t0);
-  return rc == 0 && !cloud.empty();
+  if (rc != 0 || framed.cloud.empty()) {
+    return false;
+  }
+  cloud.swap(framed.cloud);
+  origin = framed.origin;
+  return true;
 }
 
 static void cloud_to_vec(pcl::PointCloud<pcl::PointXYZ> const& cloud,
@@ -305,25 +311,23 @@ int wmain(int argc, wchar_t* argv[])
 
   pcl::PointCloud<pcl::PointXYZ> source_cloud;
   pcl::PointCloud<pcl::PointXYZ> target_cloud;
-  if (!load_slas_subtract_offset(source_file, source_cloud, timing.load_source_ms))
+  Eigen::Vector3d src_origin = Eigen::Vector3d::Zero();
+  Eigen::Vector3d tgt_origin = Eigen::Vector3d::Zero();
+  if (!load_slas_framed(source_file, source_cloud, src_origin, timing.load_source_ms))
   {
     std::cerr << "failed to load source SLAS\n";
     return 1;
   }
-  if (!load_slas_subtract_offset(target_file, target_cloud, timing.load_target_ms))
+  if (!load_slas_framed(target_file, target_cloud, tgt_origin, timing.load_target_ms))
   {
     std::cerr << "failed to load target SLAS\n";
     return 1;
   }
 
-  Ddx::point_cloud_io::LasHeaderOffset src_offset{};
-  Ddx::point_cloud_io::LasHeaderOffset tgt_offset{};
-  Ddx::point_cloud_io::read_slas_header_offset(source_file, src_offset);
-  Ddx::point_cloud_io::read_slas_header_offset(target_file, tgt_offset);
-  std::cout << "source header offset (subtracted): (" << src_offset.x << ", " << src_offset.y
-            << ", " << src_offset.z << ")\n";
-  std::cout << "target header offset (subtracted): (" << tgt_offset.x << ", " << tgt_offset.y
-            << ", " << tgt_offset.z << ")\n\n";
+  std::cout << "source FramedCloud.origin: (" << src_origin.x() << ", " << src_origin.y()
+            << ", " << src_origin.z() << ")\n";
+  std::cout << "target FramedCloud.origin: (" << tgt_origin.x() << ", " << tgt_origin.y()
+            << ", " << tgt_origin.z() << ")\n\n";
 
   const fs::path output_dir = fs::temp_directory_path() / "global_fast_gicp_pipeline_test";
   fs::create_directories(output_dir);

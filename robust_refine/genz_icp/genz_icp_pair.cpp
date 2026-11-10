@@ -20,10 +20,34 @@ void PrintUsage(const char* argv0)
            "    [--voxel-size 0.05] [--max-distance 1] [--kernel <2/3>]\n"
            "    [--min-range <m>] [--max-range <m>]\n"
            "\n"
-           "Target is the map frame. Output T satisfies p_target = T * p_source.\n"
+           "Target is the map frame. Output T satisfies p_target = T * p_source (world).\n"
+           "Clouds load as FramedCloud (local); world init is converted to local before align,\n"
+           "and the printed T is folded back to world with source/target origins.\n"
            "Does NOT voxel-downsample the input clouds (indoor / pre-voxelized).\n"
            "--voxel-size only sets VoxelHashMap cell size.\n"
-           "init.txt: 16 row-major doubles (4x4). Default identity.\n";
+           "init.txt: 16 row-major doubles (4x4) in WORLD frame. Default identity.\n";
+}
+
+/** M_loc = T(-O_t) * M_world * T(O_s); p_t' ≈ M_loc * p_s'. */
+Eigen::Matrix4d WorldToLocalInit(Eigen::Matrix4d const& M_world, Eigen::Vector3d const& O_s,
+                                 Eigen::Vector3d const& O_t)
+{
+    Eigen::Matrix4d T_os = Eigen::Matrix4d::Identity();
+    T_os.block<3, 1>(0, 3) = O_s;
+    Eigen::Matrix4d T_neg_ot = Eigen::Matrix4d::Identity();
+    T_neg_ot.block<3, 1>(0, 3) = -O_t;
+    return T_neg_ot * M_world * T_os;
+}
+
+/** M_world = T(O_t) * M_loc * T(-O_s). */
+Eigen::Matrix4d LocalToWorldPose(Eigen::Matrix4d const& M_loc, Eigen::Vector3d const& O_s,
+                                 Eigen::Vector3d const& O_t)
+{
+    Eigen::Matrix4d T_ot = Eigen::Matrix4d::Identity();
+    T_ot.block<3, 1>(0, 3) = O_t;
+    Eigen::Matrix4d T_neg_os = Eigen::Matrix4d::Identity();
+    T_neg_os.block<3, 1>(0, 3) = -O_s;
+    return T_ot * M_loc * T_neg_os;
 }
 
 bool LoadInit(const std::string& path, Eigen::Matrix4d& M)
@@ -117,41 +141,50 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr target_pcl(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr source_pcl(new pcl::PointCloud<pcl::PointXYZ>);
-    if (Ddx::point_cloud_io::load(target_path, *target_pcl) != 0) {
+    Ddx::point_cloud_io::FramedCloud<pcl::PointXYZ> target_framed;
+    Ddx::point_cloud_io::FramedCloud<pcl::PointXYZ> source_framed;
+    if (Ddx::point_cloud_io::load(target_path, target_framed) != 0) {
         std::cerr << "genz_icp_pair: failed to load target: " << target_path << "\n";
         return 1;
     }
-    if (Ddx::point_cloud_io::load(source_path, *source_pcl) != 0) {
+    if (Ddx::point_cloud_io::load(source_path, source_framed) != 0) {
         std::cerr << "genz_icp_pair: failed to load source: " << source_path << "\n";
         return 1;
     }
+    const Eigen::Vector3d O_s = source_framed.origin;
+    const Eigen::Vector3d O_t = target_framed.origin;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr target_pcl(
+        new pcl::PointCloud<pcl::PointXYZ>(std::move(target_framed.cloud)));
+    pcl::PointCloud<pcl::PointXYZ>::Ptr source_pcl(
+        new pcl::PointCloud<pcl::PointXYZ>(std::move(source_framed.cloud)));
     if (target_pcl->empty() || source_pcl->empty()) {
         std::cerr << "genz_icp_pair: empty cloud after load\n";
         return 1;
     }
 
-    Eigen::Matrix4d T0 = Eigen::Matrix4d::Identity();
-    if (!init_path.empty() && !LoadInit(init_path, T0)) {
+    Eigen::Matrix4d T0_world = Eigen::Matrix4d::Identity();
+    if (!init_path.empty() && !LoadInit(init_path, T0_world)) {
         return 1;
     }
+    const Eigen::Matrix4d T0_local = WorldToLocalInit(T0_world, O_s, O_t);
 
     std::cout << "genz_icp_pair: map_voxel=" << cfg.voxel_size << " max_distance=" << cfg.max_distance
               << " kernel=" << cfg.kernel << " pts src/tgt=" << source_pcl->size() << "/"
               << target_pcl->size() << " (no cloud downsample)\n"
+              << "O_s=(" << O_s.transpose() << ") O_t=(" << O_t.transpose()
+              << ") init converted world→local\n"
               << std::flush;
 
     genz_icp::GenZICP icp(cfg);
     icp.setSourceCloud(source_pcl);
     icp.setTargetCloud(target_pcl);
-    if (!icp.align(T0)) {
+    if (!icp.align(T0_local)) {
         std::cerr << "genz_icp_pair: registration failed (non-finite pose or zero correspondences)\n";
         return 2;
     }
 
     const auto& r = icp.lastResult();
-    const Eigen::Matrix4d& M = r.T;
+    const Eigen::Matrix4d M = LocalToWorldPose(r.T, O_s, O_t);
     std::cout.setf(std::ios::fixed);
     std::cout.precision(9);
     for (int row = 0; row < 4; ++row) {

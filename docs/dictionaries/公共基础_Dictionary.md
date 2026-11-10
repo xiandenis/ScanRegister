@@ -39,7 +39,7 @@
 | 6 | 三维随机工具 | Ddx::random | random_3d.hpp/.cpp | 公共 | 全局随机引擎与采样辅助 |
 | 7 | 内存代价模型 | MemCostModel | mem_cost_model.hpp/.cpp | 公共 | 峰值内存回归估计与磁盘持久化 |
 | 8 | 内存感知调度器 | MemAwareScheduler | mem_aware_scheduler.hpp/.cpp | 公共 | 按内存水位与代价模型调度任务 |
-| 9 | 局部工作坐标系 | WorkingFrame | working_frame.hpp | 公共 | 统一原点 O，世界↔局部坐标 |
+| 9 | 局部工作坐标系 | WorkingFrame | working_frame.hpp | 公共 | 作业级原点 O 换系工具；IO 产出的可恢复原点在 FramedCloud.origin（见粗全局配准字典） |
 | 10 | 站名自然序比较 | naturalNameLess | natural_name.hpp | 公共 | 数字段按数值、其余按字节序比较站名 |
 
 ### 文件内小算法条目
@@ -69,6 +69,8 @@
 | 19 | 调度任务描述 | MemAwareTask | 公共 | size + run 可调用对象 |
 
 #### 9、局部工作坐标系（WorkingFrame）
+
+作业级共用 `WorkingFrame` 与 IO 每云 `FramedCloud.origin` 分层：IO 必须产出可恢复 origin；作业 frame 由上层合成/设置（可 `WorkingFrame::fromOrigin(framed.origin)`）。**禁止**再依赖「裸 PointCloud + 减 LAS header offset」当工作系（已废弃缺陷）。
 
 | 序号 | 标准中文命名 | 核心代码函数/类名 | 所属模块 (私有/公共/忽略) | 一句话简述 |
 |------|--------------|-------------------|---------------------------|------------|

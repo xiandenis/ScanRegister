@@ -16,7 +16,7 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | genz_icp | matcher_tsl / PCL / TBB | 【GenZ-ICP】(genz_icp) | 仓库内/外部 | 精配准后端之一 |
 | small_gicp / basic_icp / fast_gicp | Eigen / PCL / OpenMP | 精配 ICP 集合 | 仓库内/外部 | `robust_refine/` |
 | robust_global_reg | robust_matcher | 【鲁棒全局配准】(RobustGlobalReg) | 仓库内 | 站间粗全局配准（内存点云；I/O 由调用方） |
-| point_cloud_io | logging / PCL / PDAL | 【点云读写】 | 仓库内/外部 | 多格式点云 I/O |
+| point_cloud_io | logging / PCL | 【点云读写】 | 仓库内/外部 | 多格式点云 I/O（无 PDAL；后续可再挂） |
 
 ## 已登记模块
 

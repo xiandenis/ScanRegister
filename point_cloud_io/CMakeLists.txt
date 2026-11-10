@@ -16,7 +16,6 @@ target_link_libraries(point_cloud_io PUBLIC
   pcl_io
   pcl_common
   Eigen3::Eigen
-  pdalcpp
 )
 
 if(SCAN_REGISTER_RAPIDJSON_INCLUDE)
@@ -36,4 +35,21 @@ scan_register_apply_compat(point_cloud_io)
 
 if(MSVC)
   target_compile_options(point_cloud_io PRIVATE /utf-8)
+endif()
+
+option(BUILD_POINT_CLOUD_IO_TEST "Build point_cloud_io unit tests" ${SCAN_REGISTER_IS_TOP_LEVEL})
+if(BUILD_POINT_CLOUD_IO_TEST)
+  add_executable(framed_cloud_test framed_cloud_test.cpp)
+  target_link_libraries(framed_cloud_test PRIVATE point_cloud_io)
+  scan_register_apply_compat(framed_cloud_test)
+  if(MSVC)
+    target_compile_options(framed_cloud_test PRIVATE /utf-8)
+  endif()
+
+  add_executable(framed_load_smoke framed_load_smoke.cpp)
+  target_link_libraries(framed_load_smoke PRIVATE point_cloud_io)
+  scan_register_apply_compat(framed_load_smoke)
+  if(MSVC)
+    target_compile_options(framed_load_smoke PRIVATE /utf-8)
+  endif()
 endif()

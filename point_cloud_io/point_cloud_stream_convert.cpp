@@ -37,7 +37,8 @@ struct StreamPoint {
 struct SourceInfo {
   std::uint64_t count = 0;
   bool has_rgb = false;
-  LasHeaderOffset las_offset{};
+  /** Working origin for FramedCloud-style localization (world ≈ local + origin). */
+  Eigen::Vector3d origin = Eigen::Vector3d::Zero();
   bool is_las = false;
 };
 
@@ -316,14 +317,13 @@ class ChunkReader {
 
 class LasChunkReader : public ChunkReader {
  public:
-  LasChunkReader(std::ifstream in, LasPublicHeader header, bool subtract, std::size_t chunk)
-      : in_(std::move(in)), header_(header), subtract_(subtract), chunk_(chunk)
+  LasChunkReader(std::ifstream in, LasPublicHeader header, Eigen::Vector3d origin,
+                 std::size_t chunk)
+      : in_(std::move(in)), header_(header), origin_(std::move(origin)), chunk_(chunk)
   {
     info.count = header_.point_count;
     info.is_las = true;
-    info.las_offset.x = header_.offset_x;
-    info.las_offset.y = header_.offset_y;
-    info.las_offset.z = header_.offset_z;
+    info.origin = origin_;
     const int rgb_off = header_.point_data_record_format == 2   ? 20
                         : header_.point_data_record_format == 3 ? 28
                         : (header_.point_data_record_format == 7 ||
@@ -349,9 +349,6 @@ class LasChunkReader : public ChunkReader {
     if (static_cast<std::uint64_t>(in_.gcount()) != raw_.size()) {
       return false;
     }
-    const double ox = subtract_ ? header_.offset_x : 0.0;
-    const double oy = subtract_ ? header_.offset_y : 0.0;
-    const double oz = subtract_ ? header_.offset_z : 0.0;
     out.resize(static_cast<std::size_t>(n));
     for (std::uint64_t i = 0; i < n; ++i) {
       const std::uint8_t* rec = raw_.data() + i * rec_len;
@@ -359,9 +356,12 @@ class LasChunkReader : public ChunkReader {
       const auto xi = read_le<std::int32_t>(rec);
       const auto yi = read_le<std::int32_t>(rec + 4);
       const auto zi = read_le<std::int32_t>(rec + 8);
-      pt.x = static_cast<float>(xi * header_.scale_x + header_.offset_x - ox);
-      pt.y = static_cast<float>(yi * header_.scale_y + header_.offset_y - oy);
-      pt.z = static_cast<float>(zi * header_.scale_z + header_.offset_z - oz);
+      const double wx = xi * header_.scale_x + header_.offset_x;
+      const double wy = yi * header_.scale_y + header_.offset_y;
+      const double wz = zi * header_.scale_z + header_.offset_z;
+      pt.x = static_cast<float>(wx - origin_.x());
+      pt.y = static_cast<float>(wy - origin_.y());
+      pt.z = static_cast<float>(wz - origin_.z());
       pt.intensity = static_cast<float>(read_le<std::uint16_t>(rec + 12));
       if (has_color_) {
         pt.r = static_cast<std::uint8_t>(read_le<std::uint16_t>(rec + rgb_off_) >> 8);
@@ -376,7 +376,7 @@ class LasChunkReader : public ChunkReader {
  private:
   std::ifstream in_;
   LasPublicHeader header_;
-  bool subtract_ = true;
+  Eigen::Vector3d origin_ = Eigen::Vector3d::Zero();
   std::size_t chunk_ = 0;
   std::uint64_t index_ = 0;
   bool has_color_ = false;
@@ -430,19 +430,28 @@ bool fill_from_fields(StreamPoint& pt, const std::vector<Field>& fields, const s
   return true;
 }
 
+void apply_origin(StreamPoint& pt, Eigen::Vector3d const& origin)
+{
+  pt.x = static_cast<float>(static_cast<double>(pt.x) - origin.x());
+  pt.y = static_cast<float>(static_cast<double>(pt.y) - origin.y());
+  pt.z = static_cast<float>(static_cast<double>(pt.z) - origin.z());
+}
+
 class RecordChunkReader : public ChunkReader {
  public:
   RecordChunkReader(std::ifstream in, std::vector<Field> fields, int stride, bool big_endian,
-                    std::uint64_t data_pos, std::size_t chunk)
+                    std::uint64_t data_pos, std::size_t chunk, Eigen::Vector3d origin)
       : in_(std::move(in)),
         fields_(std::move(fields)),
         stride_(stride),
         big_endian_(big_endian),
-        chunk_(chunk)
+        chunk_(chunk),
+        origin_(std::move(origin))
   {
     in_.seekg(static_cast<std::streamoff>(data_pos));
     info.has_rgb = find_field(fields_, "rgb") >= 0 || find_field(fields_, "red") >= 0 ||
                    find_field(fields_, "r") >= 0;
+    info.origin = origin_;
   }
 
   bool next(std::vector<StreamPoint>& out) override
@@ -463,6 +472,7 @@ class RecordChunkReader : public ChunkReader {
                             raw_.data() + static_cast<std::size_t>(i) * stride_, big_endian_)) {
         return false;
       }
+      apply_origin(out[static_cast<std::size_t>(i)], origin_);
     }
     index_ += n;
     return true;
@@ -475,16 +485,19 @@ class RecordChunkReader : public ChunkReader {
   bool big_endian_ = false;
   std::size_t chunk_ = 0;
   std::uint64_t index_ = 0;
+  Eigen::Vector3d origin_ = Eigen::Vector3d::Zero();
   std::vector<std::uint8_t> raw_;
 };
 
 class AsciiChunkReader : public ChunkReader {
  public:
-  AsciiChunkReader(std::ifstream in, std::vector<Field> fields, std::size_t chunk)
-      : in_(std::move(in)), fields_(std::move(fields)), chunk_(chunk)
+  AsciiChunkReader(std::ifstream in, std::vector<Field> fields, std::size_t chunk,
+                   Eigen::Vector3d origin)
+      : in_(std::move(in)), fields_(std::move(fields)), chunk_(chunk), origin_(std::move(origin))
   {
     info.has_rgb = find_field(fields_, "rgb") >= 0 || find_field(fields_, "red") >= 0 ||
                    find_field(fields_, "r") >= 0;
+    info.origin = origin_;
   }
 
   bool next(std::vector<StreamPoint>& out) override
@@ -535,6 +548,7 @@ class AsciiChunkReader : public ChunkReader {
       if (!fill_from_fields(pt, fields_, rec.data(), false)) {
         return false;
       }
+      apply_origin(pt, origin_);
       out.push_back(pt);
     }
     index_ += n;
@@ -555,16 +569,22 @@ class AsciiChunkReader : public ChunkReader {
   std::vector<Field> fields_;
   std::size_t chunk_ = 0;
   std::uint64_t index_ = 0;
+  Eigen::Vector3d origin_ = Eigen::Vector3d::Zero();
 };
 
 class MajorChunkReader : public ChunkReader {
  public:
   MajorChunkReader(std::ifstream in, std::vector<Field> fields, std::unique_ptr<TempFile> tmp,
-                   std::size_t chunk)
-      : in_(std::move(in)), fields_(std::move(fields)), tmp_(std::move(tmp)), chunk_(chunk)
+                   std::size_t chunk, Eigen::Vector3d origin)
+      : in_(std::move(in)),
+        fields_(std::move(fields)),
+        tmp_(std::move(tmp)),
+        chunk_(chunk),
+        origin_(std::move(origin))
   {
     info.has_rgb = find_field(fields_, "rgb") >= 0 || find_field(fields_, "red") >= 0 ||
                    find_field(fields_, "r") >= 0;
+    info.origin = origin_;
   }
 
   bool next(std::vector<StreamPoint>& out) override
@@ -602,6 +622,7 @@ class MajorChunkReader : public ChunkReader {
         columns_.clear();
         return false;
       }
+      apply_origin(out[static_cast<std::size_t>(i)], origin_);
     }
     columns_.clear();
     index_ += n;
@@ -617,6 +638,7 @@ class MajorChunkReader : public ChunkReader {
   std::size_t chunk_ = 0;
   std::uint64_t index_ = 0;
   int stride_ = 0;
+  Eigen::Vector3d origin_ = Eigen::Vector3d::Zero();
   std::vector<std::uint8_t> scratch_;
   std::vector<std::vector<std::uint8_t>> columns_;
 };
@@ -626,7 +648,36 @@ std::ifstream open_in(const std::string& path)
   return std::ifstream(fs::path(path), std::ios::binary);
 }
 
-std::unique_ptr<ChunkReader> open_las(const std::string& path, bool subtract, std::size_t chunk)
+bool discover_las_origin(const std::string& path, LasPublicHeader const& header,
+                         Eigen::Vector3d& origin)
+{
+  std::ifstream in = open_in(path);
+  if (!in) {
+    return false;
+  }
+  in.seekg(static_cast<std::streamoff>(header.offset_to_point_data));
+  const std::uint16_t rec_len = header.point_data_record_length;
+  std::vector<std::uint8_t> raw(rec_len);
+  for (std::uint64_t i = 0; i < header.point_count; ++i) {
+    in.read(reinterpret_cast<char*>(raw.data()), static_cast<std::streamsize>(rec_len));
+    if (static_cast<std::size_t>(in.gcount()) != rec_len) {
+      return false;
+    }
+    const auto xi = read_le<std::int32_t>(raw.data());
+    const auto yi = read_le<std::int32_t>(raw.data() + 4);
+    const auto zi = read_le<std::int32_t>(raw.data() + 8);
+    const double wx = xi * header.scale_x + header.offset_x;
+    const double wy = yi * header.scale_y + header.offset_y;
+    const double wz = zi * header.scale_z + header.offset_z;
+    if (is_valid_origin_candidate(wx, wy, wz)) {
+      origin = Eigen::Vector3d(wx, wy, wz);
+      return true;
+    }
+  }
+  return false;
+}
+
+std::unique_ptr<ChunkReader> open_las(const std::string& path, std::size_t chunk)
 {
   if (file_extension(path) == "laz") {
     LOG_ERROR("stream convert refuses LAZ (would load the whole cloud): {}", path);
@@ -644,12 +695,17 @@ std::unique_ptr<ChunkReader> open_las(const std::string& path, bool subtract, st
     LOG_ERROR("stream convert refusing empty LAS: {}", path);
     return nullptr;
   }
+  Eigen::Vector3d origin = Eigen::Vector3d::Zero();
+  if (!discover_las_origin(path, header, origin)) {
+    LOG_ERROR("stream convert: no valid origin candidate in {}", path);
+    return nullptr;
+  }
   std::ifstream in = open_in(path);
   if (!in) {
     LOG_ERROR("stream convert cannot open {}", path);
     return nullptr;
   }
-  return std::make_unique<LasChunkReader>(std::move(in), header, subtract, chunk);
+  return std::make_unique<LasChunkReader>(std::move(in), header, origin, chunk);
 }
 
 bool parse_pcd_header(std::istream& in, std::vector<Field>& fields, std::uint64_t& count,
@@ -724,7 +780,8 @@ bool parse_pcd_header(std::istream& in, std::vector<Field>& fields, std::uint64_
   return find_field(fields, "x") >= 0 && count > 0 && !data_kind.empty();
 }
 
-std::unique_ptr<ChunkReader> open_pcd(const std::string& path, std::size_t chunk)
+std::unique_ptr<ChunkReader> open_pcd(const std::string& path, std::size_t chunk,
+                                      Eigen::Vector3d const& origin)
 {
   std::ifstream in = open_in(path);
   if (!in) {
@@ -745,12 +802,12 @@ std::unique_ptr<ChunkReader> open_pcd(const std::string& path, std::size_t chunk
       stride += f.size;
     }
     auto reader = std::make_unique<RecordChunkReader>(std::move(in), fields, stride, false, data_pos,
-                                                      chunk);
+                                                      chunk, origin);
     reader->info.count = count;
     return reader;
   }
   if (kind == "ascii") {
-    auto reader = std::make_unique<AsciiChunkReader>(std::move(in), fields, chunk);
+    auto reader = std::make_unique<AsciiChunkReader>(std::move(in), fields, chunk, origin);
     reader->info.count = count;
     return reader;
   }
@@ -790,7 +847,8 @@ std::unique_ptr<ChunkReader> open_pcd(const std::string& path, std::size_t chunk
   if (!raw_in) {
     return nullptr;
   }
-  auto reader = std::make_unique<MajorChunkReader>(std::move(raw_in), fields, std::move(tmp), chunk);
+  auto reader =
+      std::make_unique<MajorChunkReader>(std::move(raw_in), fields, std::move(tmp), chunk, origin);
   reader->set_stride(stride);
   reader->info.count = count;
   return reader;
@@ -811,7 +869,8 @@ struct PlyElem {
   int stride = 0;
 };
 
-std::unique_ptr<ChunkReader> open_ply(const std::string& path, std::size_t chunk)
+std::unique_ptr<ChunkReader> open_ply(const std::string& path, std::size_t chunk,
+                                      Eigen::Vector3d const& origin)
 {
   std::ifstream in = open_in(path);
   if (!in) {
@@ -926,13 +985,13 @@ std::unique_ptr<ChunkReader> open_ply(const std::string& path, std::size_t chunk
     fields.push_back(f);
   }
   if (ascii) {
-    auto reader = std::make_unique<AsciiChunkReader>(std::move(in), fields, chunk);
+    auto reader = std::make_unique<AsciiChunkReader>(std::move(in), fields, chunk, origin);
     reader->info.count = vertex->count;
     return reader;
   }
   const auto data_pos = static_cast<std::uint64_t>(in.tellg());
   auto reader = std::make_unique<RecordChunkReader>(std::move(in), fields, vertex->stride, big_endian,
-                                                    data_pos, chunk);
+                                                    data_pos, chunk, origin);
   reader->info.count = vertex->count;
   return reader;
 }
@@ -1135,9 +1194,9 @@ std::unique_ptr<ChunkWriter> open_writer(const std::string& path, PointCloudForm
       return nullptr;
     }
     LasHeaderOffset offset{};
-    if (opt.subtract_las_header_offset && opt.preserve_source_las_offset && info.is_las) {
-      offset = info.las_offset;
-    }
+    offset.x = info.origin.x();
+    offset.y = info.origin.y();
+    offset.z = info.origin.z();
     return std::make_unique<LasWriter>(std::move(out), info.count, info.has_rgb, offset);
   }
   LOG_ERROR("stream convert unsupported destination: {}", path);
@@ -1162,11 +1221,46 @@ int convert_point_cloud(const std::string& src_path, const std::string& dst_path
   const std::size_t chunk = clamp_chunk(options.chunk_points);
   std::unique_ptr<ChunkReader> reader;
   if (src_fmt == PointCloudFormat::Las || src_fmt == PointCloudFormat::Slas) {
-    reader = open_las(src_path, options.subtract_las_header_offset, chunk);
-  } else if (src_fmt == PointCloudFormat::Pcd) {
-    reader = open_pcd(src_path, chunk);
-  } else if (src_fmt == PointCloudFormat::Ply) {
-    reader = open_ply(src_path, chunk);
+    reader = open_las(src_path, chunk);
+  } else if (src_fmt == PointCloudFormat::Pcd || src_fmt == PointCloudFormat::Ply) {
+    // Probe with origin=0 to discover the first valid world point, then reopen localized.
+    std::unique_ptr<ChunkReader> probe =
+        (src_fmt == PointCloudFormat::Pcd)
+            ? open_pcd(src_path, chunk, Eigen::Vector3d::Zero())
+            : open_ply(src_path, chunk, Eigen::Vector3d::Zero());
+    if (!probe) {
+      return -1;
+    }
+    Eigen::Vector3d origin = Eigen::Vector3d::Zero();
+    bool found = false;
+    std::vector<StreamPoint> batch;
+    std::uint64_t seen = 0;
+    while (seen < probe->info.count) {
+      if (!probe->next(batch) || batch.empty()) {
+        LOG_ERROR("stream convert origin probe failed: {}", src_path);
+        return -1;
+      }
+      for (StreamPoint const& pt : batch) {
+        if (is_valid_origin_candidate(static_cast<double>(pt.x), static_cast<double>(pt.y),
+                                      static_cast<double>(pt.z))) {
+          origin = Eigen::Vector3d(static_cast<double>(pt.x), static_cast<double>(pt.y),
+                                   static_cast<double>(pt.z));
+          found = true;
+          break;
+        }
+      }
+      seen += batch.size();
+      if (found) {
+        break;
+      }
+    }
+    if (!found) {
+      LOG_ERROR("stream convert: no valid origin candidate in {}", src_path);
+      return -1;
+    }
+    probe.reset();
+    reader = (src_fmt == PointCloudFormat::Pcd) ? open_pcd(src_path, chunk, origin)
+                                                : open_ply(src_path, chunk, origin);
   }
   if (!reader) {
     return -1;

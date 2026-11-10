@@ -70,7 +70,7 @@ cmake --build build --config Release -j
 
 ## 依赖（vcpkg）
 
-见 [`vcpkg.json`](vcpkg.json)：Eigen3、TBB、PCL、PDAL、OpenCV、spdlog、FLANN、RapidJSON、lz4、Ceres、libE57Format 等。第三方不进安装树；消费端用 vcpkg + `find_dependency`。
+见 [`vcpkg.json`](vcpkg.json)：Eigen3、TBB、PCL、OpenCV、spdlog、FLANN、RapidJSON、lz4、Ceres、libE57Format 等（PDAL 已从 `point_cloud_io` 移除，后续按需再加）。第三方不进安装树；消费端用 vcpkg + `find_dependency`。
 
 ---
 

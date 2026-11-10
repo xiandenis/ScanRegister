@@ -338,23 +338,44 @@ void decode_rgb8(const std::uint8_t* rec, const PcseManifest& meta, std::uint8_t
   }
 }
 
-template <typename PointT>
-void decode_pcse_records(const std::uint8_t* data, std::size_t n_records,
-                         std::uint64_t base_index, const PcseManifest& meta, double ox,
-                         double oy, double oz, pcl::PointCloud<PointT>& cloud)
+void world_xyz_from_pcse_record(const std::uint8_t* rec, const PcseManifest& meta, double& x,
+                                double& y, double& z)
+{
+  const std::uint8_t* pos = rec + meta.position_byte_offset;
+  x = static_cast<double>(read_i32_le(pos + 0)) * meta.scale_x + meta.offset_x;
+  y = static_cast<double>(read_i32_le(pos + 4)) * meta.scale_y + meta.offset_y;
+  z = static_cast<double>(read_i32_le(pos + 8)) * meta.scale_z + meta.offset_z;
+}
+
+bool find_origin_in_pcse_records(const std::uint8_t* data, std::size_t n_records,
+                                 const PcseManifest& meta, Eigen::Vector3d& origin)
 {
   const std::uint32_t bpp = meta.bytes_per_point;
-  const std::uint32_t pos_off = meta.position_byte_offset;
+  for (std::size_t i = 0; i < n_records; ++i) {
+    double x = 0, y = 0, z = 0;
+    world_xyz_from_pcse_record(data + i * bpp, meta, x, y, z);
+    if (is_valid_origin_candidate(x, y, z)) {
+      origin = Eigen::Vector3d(x, y, z);
+      return true;
+    }
+  }
+  return false;
+}
+
+template <typename PointT>
+void decode_pcse_records_local(const std::uint8_t* data, std::size_t n_records,
+                               std::uint64_t base_index, const PcseManifest& meta,
+                               Eigen::Vector3d const& origin, pcl::PointCloud<PointT>& cloud)
+{
+  const std::uint32_t bpp = meta.bytes_per_point;
   constexpr bool want_i = detail::PointCloudPointTraits<PointT>::has_intensity;
   constexpr bool want_rgb = detail::PointCloudPointTraits<PointT>::has_rgb;
   const bool file_has_color = meta.has_rgb;
 
   for (std::size_t i = 0; i < n_records; ++i) {
     const std::uint8_t* rec = data + i * bpp;
-    const std::uint8_t* pos = rec + pos_off;
-    const double x_abs = static_cast<double>(read_i32_le(pos + 0)) * meta.scale_x + meta.offset_x;
-    const double y_abs = static_cast<double>(read_i32_le(pos + 4)) * meta.scale_y + meta.offset_y;
-    const double z_abs = static_cast<double>(read_i32_le(pos + 8)) * meta.scale_z + meta.offset_z;
+    double x_abs = 0, y_abs = 0, z_abs = 0;
+    world_xyz_from_pcse_record(rec, meta, x_abs, y_abs, z_abs);
 
     float intensity = 0.f;
     if constexpr (want_i) {
@@ -368,14 +389,15 @@ void decode_pcse_records(const std::uint8_t* data, std::size_t n_records,
     }
 
     PointT& pt = cloud.points[static_cast<std::size_t>(base_index + i)];
-    detail::assign_from_las(pt, static_cast<float>(x_abs - ox), static_cast<float>(y_abs - oy),
-                            static_cast<float>(z_abs - oz), intensity, file_has_color, r, g, b);
+    detail::assign_from_las(pt, static_cast<float>(x_abs - origin.x()),
+                            static_cast<float>(y_abs - origin.y()),
+                            static_cast<float>(z_abs - origin.z()), intensity, file_has_color, r,
+                            g, b);
   }
 }
 
 template <typename PointT>
-int load_pcse_impl(const std::string& path, pcl::PointCloud<PointT>& cloud,
-                   bool subtract_offset)
+int load_pcse_impl(const std::string& path, FramedCloud<PointT>& framed)
 {
   static_assert(detail::PointCloudPointTraits<PointT>::has_xyz,
                 "PCSE loader requires XYZ point type");
@@ -408,18 +430,6 @@ int load_pcse_impl(const std::string& path, pcl::PointCloud<PointT>& cloud,
     return -1;
   }
 
-  // offset 是量化锚点：先 i*scale+offset 还原数据集坐标；subtract 再减一次仅用于特殊调试。
-  // 站心 PCSE 的数据集坐标就是站心，默认 subtract_offset=false。
-  const double ox = subtract_offset ? meta.offset_x : 0.0;
-  const double oy = subtract_offset ? meta.offset_y : 0.0;
-  const double oz = subtract_offset ? meta.offset_z : 0.0;
-
-  cloud.clear();
-  cloud.points.resize(static_cast<std::size_t>(n));
-  cloud.width = static_cast<std::uint32_t>(n);
-  cloud.height = 1;
-  cloud.is_dense = true;
-
   std::size_t chunk_bytes = kChunkBytesTarget;
   if (chunk_bytes < bpp) {
     chunk_bytes = bpp;
@@ -435,7 +445,39 @@ int load_pcse_impl(const std::string& path, pcl::PointCloud<PointT>& cloud,
   std::vector<std::uint8_t> chunk(chunk_bytes);
   in.seekg(0, std::ios::beg);
 
+  Eigen::Vector3d origin = Eigen::Vector3d::Zero();
+  bool found_origin = false;
   std::uint64_t points_done = 0;
+  while (points_done < n && !found_origin) {
+    const std::uint64_t remaining = n - points_done;
+    const std::size_t this_records = static_cast<std::size_t>(
+        std::min<std::uint64_t>(remaining, chunk_bytes / bpp));
+    const std::size_t this_bytes = this_records * bpp;
+    in.read(reinterpret_cast<char*>(chunk.data()), static_cast<std::streamsize>(this_bytes));
+    if (!in || static_cast<std::size_t>(in.gcount()) != this_bytes) {
+      LOG_ERROR("PCSE failed reading points.bin: {}", meta.points_bin_path);
+      return -1;
+    }
+    if (find_origin_in_pcse_records(chunk.data(), this_records, meta, origin)) {
+      found_origin = true;
+    }
+    points_done += this_records;
+  }
+  if (!found_origin) {
+    LOG_ERROR("PCSE: no valid origin candidate: {}", meta.points_bin_path);
+    return -1;
+  }
+
+  framed.origin = origin;
+  framed.cloud.clear();
+  framed.cloud.points.resize(static_cast<std::size_t>(n));
+  framed.cloud.width = static_cast<std::uint32_t>(n);
+  framed.cloud.height = 1;
+  framed.cloud.is_dense = true;
+
+  in.clear();
+  in.seekg(0, std::ios::beg);
+  points_done = 0;
   while (points_done < n) {
     const std::uint64_t remaining = n - points_done;
     const std::size_t this_records = static_cast<std::size_t>(
@@ -444,10 +486,11 @@ int load_pcse_impl(const std::string& path, pcl::PointCloud<PointT>& cloud,
     in.read(reinterpret_cast<char*>(chunk.data()), static_cast<std::streamsize>(this_bytes));
     if (!in || static_cast<std::size_t>(in.gcount()) != this_bytes) {
       LOG_ERROR("PCSE failed reading points.bin: {}", meta.points_bin_path);
-      cloud.clear();
+      framed.cloud.clear();
       return -1;
     }
-    decode_pcse_records(chunk.data(), this_records, points_done, meta, ox, oy, oz, cloud);
+    decode_pcse_records_local(chunk.data(), this_records, points_done, meta, origin,
+                              framed.cloud);
     points_done += this_records;
   }
   return 0;
@@ -509,24 +552,21 @@ int read_pcse_manifest(const std::string& path, PcseManifest& out)
 }
 
 template <>
-int load_pcse<pcl::PointXYZ>(const std::string& path, pcl::PointCloud<pcl::PointXYZ>& cloud,
-                             bool subtract_offset)
+int load_pcse<pcl::PointXYZ>(const std::string& path, FramedCloud<pcl::PointXYZ>& framed)
 {
-  return load_pcse_impl(path, cloud, subtract_offset);
+  return load_pcse_impl(path, framed);
 }
 
 template <>
-int load_pcse<pcl::PointXYZI>(const std::string& path, pcl::PointCloud<pcl::PointXYZI>& cloud,
-                              bool subtract_offset)
+int load_pcse<pcl::PointXYZI>(const std::string& path, FramedCloud<pcl::PointXYZI>& framed)
 {
-  return load_pcse_impl(path, cloud, subtract_offset);
+  return load_pcse_impl(path, framed);
 }
 
 template <>
-int load_pcse<pcl::PointXYZRGB>(const std::string& path,
-                                pcl::PointCloud<pcl::PointXYZRGB>& cloud, bool subtract_offset)
+int load_pcse<pcl::PointXYZRGB>(const std::string& path, FramedCloud<pcl::PointXYZRGB>& framed)
 {
-  return load_pcse_impl(path, cloud, subtract_offset);
+  return load_pcse_impl(path, framed);
 }
 
 }  // namespace Ddx::point_cloud_io

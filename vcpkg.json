@@ -6,7 +6,6 @@
     "eigen3",
     "tbb",
     "pcl",
-    "pdal",
     "opencv4",
     "spdlog",
     "flann",

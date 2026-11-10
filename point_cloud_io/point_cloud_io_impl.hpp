@@ -47,10 +47,9 @@ inline PointCloudFormat detect_format(const std::string& file_path)
 }
 
 template <typename PointT>
-int load_slas(const std::string& file_path, pcl::PointCloud<PointT>& cloud,
-              bool subtract_header_offset)
+int load_slas(const std::string& file_path, FramedCloud<PointT>& framed)
 {
-  return load_las<PointT>(file_path, cloud, subtract_header_offset);
+  return load_las<PointT>(file_path, framed);
 }
 
 inline int read_slas_header_offset(const std::string& file_path, LasHeaderOffset& offset)
@@ -59,54 +58,59 @@ inline int read_slas_header_offset(const std::string& file_path, LasHeaderOffset
 }
 
 template <typename PointT>
-int load_ply(const std::string& file_path, pcl::PointCloud<PointT>& cloud)
+int load_ply(const std::string& file_path, FramedCloud<PointT>& framed)
 {
-  return pcl::io::loadPLYFile(file_path, cloud);
+  framed.origin = Eigen::Vector3d::Zero();
+  framed.cloud.clear();
+  if (pcl::io::loadPLYFile(file_path, framed.cloud) < 0) {
+    return -1;
+  }
+  return localize_world_cloud(framed);
 }
 
 template <typename PointT>
-int load_pcd(const std::string& file_path, pcl::PointCloud<PointT>& cloud)
+int load_pcd(const std::string& file_path, FramedCloud<PointT>& framed)
 {
-  return pcl::io::loadPCDFile(file_path, cloud);
+  framed.origin = Eigen::Vector3d::Zero();
+  framed.cloud.clear();
+  if (pcl::io::loadPCDFile(file_path, framed.cloud) < 0) {
+    return -1;
+  }
+  return localize_world_cloud(framed);
 }
 
 template <typename PointT>
-int load(const std::string& file_path, pcl::PointCloud<PointT>& cloud,
-         bool subtract_las_header_offset)
+int load(const std::string& file_path, FramedCloud<PointT>& framed)
 {
   switch (detect_format(file_path)) {
     case PointCloudFormat::Las:
     case PointCloudFormat::Slas:
-      return load_las<PointT>(file_path, cloud, subtract_las_header_offset);
+      return load_las<PointT>(file_path, framed);
     case PointCloudFormat::Ply:
-      return load_ply<PointT>(file_path, cloud);
+      return load_ply<PointT>(file_path, framed);
     case PointCloudFormat::Pcd:
-      return load_pcd<PointT>(file_path, cloud);
+      return load_pcd<PointT>(file_path, framed);
     case PointCloudFormat::Pcse:
-      // PCSE manifest offset 是 int32 量化锚点（常≈bbox.min），不是 LAS 式「大坐标系头偏移」。
-      // 解码 x=i*scale+offset 已是数据集坐标系（站心 PCSE 即站心）；再减 offset 会把原点挪到包围盒角。
-      (void)subtract_las_header_offset;
-      return load_pcse<PointT>(file_path, cloud, /*subtract_offset=*/false);
+      return load_pcse<PointT>(file_path, framed);
     default:
       return -1;
   }
 }
 
 template <typename PointT>
-int save_slas(const std::string& file_path, const pcl::PointCloud<PointT>& cloud,
-              const LasHeaderOffset& header_offset)
+int save_slas(const std::string& file_path, const FramedCloud<PointT>& framed)
 {
-  return save_las<PointT>(file_path, cloud, header_offset);
+  return save_las<PointT>(file_path, framed);
 }
 
 template <typename PointT>
-int save_pcd(const std::string& file_path, const pcl::PointCloud<PointT>& cloud)
+int save_pcd(const std::string& file_path, const FramedCloud<PointT>& framed)
 {
-  if (cloud.empty()) {
+  if (framed.cloud.empty()) {
     LOG_ERROR("PCD writer refusing empty cloud: {}", file_path);
     return -1;
   }
-  if (pcl::io::savePCDFileBinary(file_path, cloud) < 0) {
+  if (pcl::io::savePCDFileBinary(file_path, framed.cloud) < 0) {
     LOG_ERROR("PCL failed to write PCD {}", file_path);
     return -1;
   }
@@ -114,13 +118,13 @@ int save_pcd(const std::string& file_path, const pcl::PointCloud<PointT>& cloud)
 }
 
 template <typename PointT>
-int save_ply(const std::string& file_path, const pcl::PointCloud<PointT>& cloud)
+int save_ply(const std::string& file_path, const FramedCloud<PointT>& framed)
 {
-  if (cloud.empty()) {
+  if (framed.cloud.empty()) {
     LOG_ERROR("PLY writer refusing empty cloud: {}", file_path);
     return -1;
   }
-  if (pcl::io::savePLYFileBinary(file_path, cloud) < 0) {
+  if (pcl::io::savePLYFileBinary(file_path, framed.cloud) < 0) {
     LOG_ERROR("PCL failed to write PLY {}", file_path);
     return -1;
   }
@@ -128,17 +132,16 @@ int save_ply(const std::string& file_path, const pcl::PointCloud<PointT>& cloud)
 }
 
 template <typename PointT>
-int save(const std::string& file_path, const pcl::PointCloud<PointT>& cloud,
-         const LasHeaderOffset& header_offset)
+int save(const std::string& file_path, const FramedCloud<PointT>& framed)
 {
   switch (detect_format(file_path)) {
     case PointCloudFormat::Las:
     case PointCloudFormat::Slas:
-      return save_las<PointT>(file_path, cloud, header_offset);
+      return save_las<PointT>(file_path, framed);
     case PointCloudFormat::Ply:
-      return save_ply<PointT>(file_path, cloud);
+      return save_ply<PointT>(file_path, framed);
     case PointCloudFormat::Pcd:
-      return save_pcd<PointT>(file_path, cloud);
+      return save_pcd<PointT>(file_path, framed);
     default:
       LOG_ERROR("unsupported point cloud extension for save: {}", file_path);
       return -1;

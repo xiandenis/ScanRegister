@@ -6,7 +6,7 @@
 
 - 纯内存入口（打破旧契约）：公共 `run` 只接收已准备好的点，库内删除 `loadCloud` 与对 `point_cloud_io` 的链接。
 - 输入类型：`const std::vector<Eigen::Vector3f>&`（与现有 `_run` 一致）。
-- 坐标系契约：WorkingFrame / 站心 / LAS header offset 完全由调用方完成 `p' = p - O` 后再传入；模块不接收原点、不减偏移。
+- 坐标系契约：调用方完成局部化后再传入；推荐经 `point_cloud_io` 得 `FramedCloud` 后用 `.cloud`（或再 rebase 到作业 WorkingFrame）。模块不接收原点、不减偏移。旧「仅减 LAS header offset」不当工作系（见 FramedCloud IO 规格）。
 
 ## 消费者输入契约
 

@@ -85,6 +85,7 @@ alwaysApply: true
 | 点云上采样 cloud_upsample（**格点已实施**；整平面铺格记下不做） | [`docs/plan/点云上采样.md`](docs/plan/点云上采样.md)（切平面格点已落地；整平面拟合后再铺格仅记录、不实现） |
 | 全景深度图估计器 | [`docs/plan/全景深度图估计器.md`](docs/plan/全景深度图估计器.md)（`DepthMapEstimator`：Root 本体系 `CV_32FC1` PFM 缓存；`SpaceInspection` 投影点云用完即释放） |
 | robust_global_reg 点云 I/O 外置 | [`docs/plan/robust_global_reg点云IO外置.md`](docs/plan/robust_global_reg点云IO外置.md)（**已实施**：纯内存 `run(src,tgt)`；罗盘须站心在原点） |
+| FramedCloud 点云 IO | [`docs/plan/FramedCloud点云IO.md`](docs/plan/FramedCloud点云IO.md)（规格 [`docs/superpowers/specs/2026-11-10-framed-cloud-io-design.md`](docs/superpowers/specs/2026-11-10-framed-cloud-io-design.md)；**已实施**） |
 
 （新增导出时在本表补一行。）
 
