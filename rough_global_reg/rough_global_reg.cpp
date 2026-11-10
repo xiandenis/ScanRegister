@@ -126,6 +126,40 @@ namespace
             && target.has_station_origin_;
     }
 
+    bool RoughGlobalReg::isReadyLidarFrame(LidarFrame const& frame, std::string* reason)
+    {
+        auto fail = [&](char const* msg) {
+            if (reason) {
+                *reason = msg;
+            }
+            return false;
+        };
+
+        // Must be station-centered (站心系) and already initialized.
+        if (!frame.has_station_origin_) {
+            return fail("has_station_origin_ is false");
+        }
+        if (!stateHas(frame.state_, HAS_CALCU)) {
+            return fail("frame not initialized (missing HAS_CALCU; run RegistrationInitializer)");
+        }
+        int const idx = frame.findSubVoxelIndex("voxel_3");
+        if (idx < 0) {
+            return fail("voxel_3 subvoxel missing (not initialized)");
+        }
+        SubVoxel const& voxel = frame.subvoxel_vec_[static_cast<size_t>(idx)];
+        if (!stateHas(voxel.state_, HAS_CALCU)) {
+            return fail("voxel_3 not computed (missing HAS_CALCU)");
+        }
+        if (voxel.point_number_ <= 1) {
+            return fail("voxel_3 point_number too small");
+        }
+        std::string const path = frame.getCloudPath("voxel_3");
+        if (!pathOk(path)) {
+            return fail("voxel_3 cache file missing");
+        }
+        return true;
+    }
+
     bool RoughGlobalReg::resolveUseHnswKnn(float resolution)
     {
         constexpr float kHnswMinVoxelSize = 0.20f;
@@ -256,24 +290,18 @@ namespace
                                            float resolution, int iter_number, bool use_compass,
                                            Eigen::Matrix4d const* initial_guess_world)
     {
-        // voxel_3 caches are station-centered; fold-back needs declared station origins.
-        if (!source.has_station_origin_ || !target.has_station_origin_) {
-            LOG_ERROR(
-                "LidarFrame rough reg requires has_station_origin_ on both ({} / {})",
-                source.name_, target.name_);
+        // LidarFrame API: station-centered data + finished RegistrationInitializer only.
+        std::string src_reason;
+        std::string tgt_reason;
+        if (!isReadyLidarFrame(source, &src_reason)) {
+            LOG_ERROR("LidarFrame source not ready for rough reg ({}): {}", source.name_,
+                      src_reason);
             m_alignResult.state_ = INVALID;
             return false;
         }
-
-        std::string const src_path = source.getCloudPath("voxel_3");
-        std::string const tgt_path = target.getCloudPath("voxel_3");
-        if (!pathOk(src_path)) {
-            LOG_ERROR("source voxel_3 missing ({}) path={}", source.name_, src_path);
-            m_alignResult.state_ = INVALID;
-            return false;
-        }
-        if (!pathOk(tgt_path)) {
-            LOG_ERROR("target voxel_3 missing ({}) path={}", target.name_, tgt_path);
+        if (!isReadyLidarFrame(target, &tgt_reason)) {
+            LOG_ERROR("LidarFrame target not ready for rough reg ({}): {}", target.name_,
+                      tgt_reason);
             m_alignResult.state_ = INVALID;
             return false;
         }
@@ -284,11 +312,11 @@ namespace
         std::vector<Eigen::Vector3f> src_vec;
         std::vector<Eigen::Vector3f> tgt_vec;
 
-        if (!loadStationPcdToVec(src_path, source.name_, src_vec)) {
+        if (!loadStationPcdToVec(source.getCloudPath("voxel_3"), source.name_, src_vec)) {
             m_alignResult.state_ = INVALID;
             return false;
         }
-        if (!loadStationPcdToVec(tgt_path, target.name_, tgt_vec)) {
+        if (!loadStationPcdToVec(target.getCloudPath("voxel_3"), target.name_, tgt_vec)) {
             m_alignResult.state_ = INVALID;
             return false;
         }

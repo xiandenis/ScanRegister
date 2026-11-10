@@ -11,8 +11,9 @@ namespace Ddx
      * Business facade over RobustGlobalReg.
      *
      * - ScanInfo: load lasFn_ as FramedCloud (IO localize); optional station fold for compass.
-     * - LidarFrame: load station-centered voxel_3 cache (no FramedCloud re-localize);
-     *   pose fold uses ScanInfo.station_origin_ (file CRS). Requires has_station_origin_.
+     * - LidarFrame: only after RegistrationInitializer + declared station origin.
+     *   Loads station-centered voxel_3 cache (no FramedCloud re-localize);
+     *   pose fold uses station_origin_ (file CRS).
      *
      * Compass: only on station-centered data (has_station_origin_ + SENSOR_COMPASS).
      * guess / AlignResult.matrix_ are file/world frame.
@@ -26,7 +27,7 @@ namespace Ddx
         bool run(ScanInfo const& source, ScanInfo const& target, float resolution,
                  int iter_number = -1);
 
-        // --- LidarFrame (voxel_3 station-centered cache) ---
+        // --- LidarFrame: requires station-centered + initialized (HAS_CALCU, voxel_3 ready) ---
         bool run(LidarFrame const& source, LidarFrame const& target, float resolution,
                  Eigen::Matrix4d const& guess, int iter_number = -1, bool use_compass = false);
         bool run(LidarFrame const& source, LidarFrame const& target, float resolution,
@@ -38,6 +39,8 @@ namespace Ddx
         static int resolveIterationCount(float resolution, int iter_number);
         /** SENSOR_COMPASS on both AND has_station_origin_ on both. */
         static bool canUseCompass(ScanInfo const& source, ScanInfo const& target);
+        /** Station-centered + initialized frame with usable voxel_3 cache. */
+        static bool isReadyLidarFrame(LidarFrame const& frame, std::string* reason = nullptr);
         static bool resolveUseHnswKnn(float resolution);
         static bool resolveUseFeatSpatialBudget(float resolution);
 

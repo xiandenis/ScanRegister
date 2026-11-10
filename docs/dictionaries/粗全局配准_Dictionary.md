@@ -54,7 +54,7 @@
 | 入口 | 语义 |
 |------|------|
 | `ScanInfo` + `resolution` + 可选世界系 `guess` | `load(lasFn_)` → FramedCloud；无罗盘时 rebase 到源 `origin`；有罗盘时折到站心系（须双方 `has_station_origin_`） |
-| `LidarFrame` + `resolution` | 读 `voxel_3` **站心系缓存**（`pcl::io::loadPCDFile`，**禁止**再走 FramedCloud 局部化）；须双方 `has_station_origin_`；折回用 `station_origin_` |
+| `LidarFrame` + `resolution` | **仅**站心数据 + 已初始化可用：须 `has_station_origin_`、帧/`voxel_3` 均 `HAS_CALCU`、缓存文件在；直读站心系 PCD（禁止 FramedCloud 再局部化）；折回用 `station_origin_` |
 | 初始阵 / 结果阵 | 调用方传入的 `guess` 为**文件/世界系**；进内核前变局部/站心系；`AlignResult.matrix_` 折回**文件/世界系**（\(M=T(O_t)M_{\mathrm{loc}}T(-O_s)\)） |
 | 分辨率策略 | `resolution≥0.20` → HNSW + 特征分箱软预算；否则 FLANN。无初始阵时按 resolution 估迭代次数 |
 | 罗盘 | **仅站心系可用**：须双方 `has_station_origin_`；`ScanInfo` 路径先折站心再开；`LidarFrame` 缓存已是站心系。无猜测：双方 `SENSOR_COMPASS` **且**已声明站心才自动开；显式开缺站心则失败 |
@@ -120,11 +120,12 @@
 | 12 | LidarFrame 无初始阵粗配 | RoughGlobalReg::run(LidarFrame...) | 公共 | 会话主路径；canUseCompass 时开罗盘 |
 | 13 | 解析迭代次数 | resolveIterationCount | 私有 | resolution 分段映射迭代（或采用显式值） |
 | 14 | 罗盘可用判定 | canUseCompass | 私有 | 双方 SENSOR_COMPASS 且均已声明站心 |
-| 15 | 解析 HNSW 近邻 | resolveUseHnswKnn | 私有 | resolution≥0.20 → HNSW，否则 FLANN |
-| 16 | 解析特征分箱预算 | resolveUseFeatSpatialBudget | 私有 | 与 HNSW 同阈值，仅室外开软预算 |
-| 17 | ScanInfo 装载执行 | runFromScanInfo | 私有 | FramedCloud 加载/折系后进内核 |
-| 18 | LidarFrame 装载执行 | runFromLidarFrame | 私有 | 站心 PCD 直读（无 IO 再局部化） |
-| 19 | 内核组参执行 | runKernel | 私有 | 组参/`run(src,tgt)`/折回世界系 |
+| 15 | LidarFrame 就绪判定 | isReadyLidarFrame | 私有 | 站心声明 + HAS_CALCU + voxel_3 缓存可用 |
+| 16 | 解析 HNSW 近邻 | resolveUseHnswKnn | 私有 | resolution≥0.20 → HNSW，否则 FLANN |
+| 17 | 解析特征分箱预算 | resolveUseFeatSpatialBudget | 私有 | 与 HNSW 同阈值，仅室外开软预算 |
+| 18 | ScanInfo 装载执行 | runFromScanInfo | 私有 | FramedCloud 加载/折系后进内核 |
+| 19 | LidarFrame 装载执行 | runFromLidarFrame | 私有 | 站心 PCD 直读（无 IO 再局部化） |
+| 20 | 内核组参执行 | runKernel | 私有 | 组参/`run(src,tgt)`/折回世界系 |
 
 #### 8、粗配准门面联调（rough_global_reg_test）
 
