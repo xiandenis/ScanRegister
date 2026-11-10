@@ -1,6 +1,8 @@
 # 公共基础_Dictionary
 
-覆盖模块：`common`、`file_system`、`logging`。CMake 目标同名，默认 **SHARED**。
+覆盖模块：`common`、`file_system`、`logging`、`graph`。  
+`common` / `file_system` / `logging` 默认 **SHARED**；`graph` 为 **INTERFACE**（纯头文件，无翻译单元）。  
+`graph` 与 `robust_rough/robin` 的【ROBIN 图核心】无关（后者是配准外点兼容图）。
 
 ## 模块相互依赖关系
 
@@ -13,6 +15,7 @@
 | logging | spdlog | spdlog | 外部 | 日志实现 |
 | logging | Threads | Threads::Threads | 外部 | 线程与采样 |
 | file_system | （无） | — | — | 无仓库内依赖 |
+| graph | （无） | — | — | 纯标准库；无 Boost / 无仓库内依赖 |
 
 ### 本领域被谁依赖
 
@@ -20,7 +23,8 @@
 |--------|----------|--------------------------------------|------------------------|------------|
 | robust_global_reg | common / logging / file_system | Common / LogManager | 仓库内 | 粗配准内存入口 |
 | point_cloud_io | logging | LogManager | 仓库内 | 公共点云 IO（见点云 IO 字典） |
-| （待上层业务） | common / logging / file_system | — | 仓库内 | 业务模块迁入后回填 |
+| scan_register（伞目标） | graph | 【最小生成树】/【连通分量】/【最短路径】 | 仓库内 | 基础图算法随伞目标导出 |
+| （待上层业务） | common / logging / file_system / graph | — | 仓库内 | 业务模块迁入后回填 |
 
 ---
 
@@ -180,5 +184,53 @@
 待补充（需结合业务确认）
 
 #### 33、计时记录器（TimeRecorder / TicToc）
+
+待补充（需结合业务确认）
+
+---
+
+## 模块：graph
+
+依赖摘要：纯 C++17 标准库头文件；CMake 目标 `graph`（INTERFACE）。与 `robin::graph` / `teaser::Graph` 命名空间与用途均不同。
+
+### 文件级算法条目
+
+| 序号 | 标准中文命名 | 核心代码函数/类名 | 来源 | 所属模块 (私有/公共/忽略) | 一句话简述 |
+|------|--------------|-------------------|------|---------------------------|------------|
+| 38 | 图节点与边 | GraphNode / GraphEdge / NodeID | graph.hpp | 公共 | 带权无向图基本元素 |
+| 39 | 最小生成树 | MinimumSpanningTree | graph.hpp | 公共 | Kruskal / Prim 求 MST |
+| 40 | 连通分量子图 | ConnectedComponentsSubgraph | graph.hpp | 公共 | 按连通分量分组边或节点 |
+| 41 | 最短路径 | ShortestPaths | graph.hpp | 公共 | Dijkstra 单源最短路径 |
+| 42 | 图算法 std 别名（弃用） | Ddx::graph_std::* | graph_std.hpp | 忽略 | 兼容旧 `#include`；请改用 `graph.hpp` |
+
+### 文件内小算法条目
+
+#### 38、图节点与边（GraphNode / GraphEdge）
+
+待补充（需结合业务确认）
+
+#### 39、最小生成树（MinimumSpanningTree）
+
+| 序号 | 标准中文命名 | 核心代码函数/类名 | 所属模块 (私有/公共/忽略) | 一句话简述 |
+|------|--------------|-------------------|---------------------------|------------|
+| 43 | Kruskal 最小生成树 | kruskalRun / kruskalRun2 / kruskal_mst | 公共 | 按边权排序 + 并查集合并 |
+| 44 | Prim 最小生成树 | primRun / prim_mst | 公共 | 优先队列扩展生成树（含多连通分量） |
+| 45 | 并查集 | graph_detail::UnionFind | 私有 | 路径压缩 + 按秩合并 |
+
+#### 40、连通分量子图（ConnectedComponentsSubgraph）
+
+| 序号 | 标准中文命名 | 核心代码函数/类名 | 所属模块 (私有/公共/忽略) | 一句话简述 |
+|------|--------------|-------------------|---------------------------|------------|
+| 46 | 连通分量边分组 | ConnectedComponentsSubgraph::run | 公共 | 同分量内边列表 |
+| 47 | 连通分量节点分组 | ConnectedComponentsSubgraph::run2 | 公共 | 同分量内节点列表 |
+| 48 | 连通分量标记 | connected_component_labels | 私有 | DFS/栈式分量标号 |
+
+#### 41、最短路径（ShortestPaths）
+
+| 序号 | 标准中文命名 | 核心代码函数/类名 | 所属模块 (私有/公共/忽略) | 一句话简述 |
+|------|--------------|-------------------|---------------------------|------------|
+| 49 | Dijkstra 最短路径 | ShortestPaths::run / dijkstra_path | 公共 | 非负权最短节点序列（dst→src 逆序） |
+
+#### 42、图算法 std 别名（弃用）（Ddx::graph_std）
 
 待补充（需结合业务确认）

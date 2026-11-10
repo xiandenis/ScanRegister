@@ -19,6 +19,7 @@
 | [`common/`](common/) | 公共工具、E57 几何、WorkingFrame、内存调度（SHARED） |
 | [`file_system/`](file_system/) | 可移植文件系统与通配（SHARED） |
 | [`logging/`](logging/) | 进程内统一日志（SHARED，spdlog） |
+| [`graph/`](graph/) | 通用图算法 MST / 连通分量 / Dijkstra（INTERFACE，纯 std） |
 | [`robust_rough/`](robust_rough/) | 鲁棒粗匹配：`robust_matcher` / `teaser` / `robin` / `pmc` 等（**STATIC** / INTERFACE） |
 | [`robust_refine/`](robust_refine/) | 鲁棒精配：`basic_icp` / `small_gicp` / `genz_icp` / `fast_gicp`（**STATIC** / INTERFACE） |
 | [`point_cloud_io/`](point_cloud_io/) | 点云多格式 I/O（SHARED；由调用方/测试链接） |

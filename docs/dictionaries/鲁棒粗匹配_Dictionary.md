@@ -82,7 +82,7 @@
 | 序号 | 标准中文命名 | 核心代码函数/类名 | 来源 | 所属模块 (私有/公共/忽略) | 一句话简述 |
 |------|--------------|-------------------|------|---------------------------|------------|
 | 8 | ROBIN 内点选择 | robin::FindInlierStructure 等 | robin.hpp/.cpp | 公共 | 最大核/最大团等内点图结构 |
-| 9 | ROBIN 图核心 | graph / graph_core / graph_solvers | graph*.hpp/.cpp | 私有 | 图构建与求解 |
+| 9 | ROBIN 图核心 | graph / graph_core / graph_solvers | graph*.hpp/.cpp | 私有 | 图构建与求解（≠ 仓库根 `graph/` 通用图算法模块） |
 | 10 | ROBIN 问题封装 | problems | problems.hpp/.cpp | 私有 | 向量/旋转平均等问题接口 |
 
 ### 文件内小算法条目

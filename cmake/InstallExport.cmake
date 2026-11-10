@@ -5,7 +5,7 @@
 #   full            — 全量库目标与头模块清单（模块落地后填写）。
 #   lidarstudio     — LidarStudio 产品白名单根目标链接闭包（模块落地后填写）。
 #
-# 已落地：common / file_system / logging / point_cloud_io /
+# 已落地：common / file_system / logging / graph / point_cloud_io /
 #         robust_rough/* / robust_refine/* / robust_global_reg。
 
 include(GNUInstallDirs)
@@ -23,6 +23,7 @@ set(_SR_LIB_TARGETS_FULL
   common
   file_system
   logging
+  graph
   scan_register
   xenium
   matcher_tsl
@@ -45,6 +46,7 @@ set(_SR_HEADER_MODULES_FULL
   common
   file_system
   logging
+  graph
   teaser
   robin
   robust_matcher
@@ -61,6 +63,7 @@ set(_SR_HEADER_MODULES_PARTY
   common
   file_system
   logging
+  graph
 )
 
 # Party：链接闭包根目标（伞目标拉起 common / file_system / logging）
@@ -80,6 +83,7 @@ set(_SR_HEADER_MODULES_LIDARSTUDIO
   common
   file_system
   logging
+  graph
 )
 
 # LidarStudio：链接闭包根目标

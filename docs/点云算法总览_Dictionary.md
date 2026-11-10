@@ -10,6 +10,8 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | logging | spdlog | spdlog::spdlog | 外部 | 日志后端 |
 | common | Eigen3 | Eigen::Matrix / Vector | 外部 | 矩阵与坐标变换 |
 | file_system | （无仓库内） | — | — | 独立文件系统工具 |
+| graph | （无） | 【最小生成树】/【连通分量】/【最短路径】 | — | 纯 std 通用图算法（INTERFACE；≠ robin/teaser 图） |
+| scan_register（伞） | graph | graph.hpp | 仓库内 | 基础图算法随伞目标导出 |
 | point_cloud_io | logging / PCL / Eigen | 【FramedCloud / 点云读写】 | 仓库内/外部 | 公共 IO；局部云+可恢复 origin（无 PDAL） |
 | 测试 / Session / 精配工具等 | point_cloud_io | 【FramedCloud】(load/save) | 仓库内 | 读盘局部化；配准前后对 M / M_init 做 origin 系变换 |
 | robust_matcher | robin / matcher_* | 【鲁棒匹配器】(RobustMatcher) | 仓库内 | 鲁棒粗匹配主入口 |
@@ -27,6 +29,7 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | common | [`dictionaries/公共基础_Dictionary.md`](dictionaries/公共基础_Dictionary.md) | [`modules/公共基础.md`](modules/公共基础.md) |
 | file_system | 同上 | 同上 |
 | logging | 同上 | 同上 |
+| **graph** | 同上 | 同上 |
 | **point_cloud_io** | [`dictionaries/点云IO_Dictionary.md`](dictionaries/点云IO_Dictionary.md) | [`modules/点云IO.md`](modules/点云IO.md) |
 | robust_matcher 等（`robust_rough/`） | [`dictionaries/鲁棒粗匹配_Dictionary.md`](dictionaries/鲁棒粗匹配_Dictionary.md) | [`modules/鲁棒粗匹配.md`](modules/鲁棒粗匹配.md) |
 | basic_icp 等（`robust_refine/`） | [`dictionaries/鲁棒精配_Dictionary.md`](dictionaries/鲁棒精配_Dictionary.md) | [`modules/鲁棒精配.md`](modules/鲁棒精配.md) |

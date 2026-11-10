@@ -52,6 +52,7 @@ include(Dependencies)
 add_subdirectory(logging)
 add_subdirectory(file_system)
 add_subdirectory(common)
+add_subdirectory(graph)
 add_subdirectory(point_cloud_io)
 
 # Robust coarse-matching stack (STATIC / header INTERFACE leaves under robust_rough/).
@@ -71,6 +72,7 @@ target_link_libraries(scan_register INTERFACE
   common
   file_system
   logging
+  graph
 )
 
 if(SCAN_REGISTER_INSTALL AND SCAN_REGISTER_IS_TOP_LEVEL)
