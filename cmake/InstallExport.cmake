@@ -5,8 +5,7 @@
 #   full            — 全量库目标与头模块清单（模块落地后填写）。
 #   lidarstudio     — LidarStudio 产品白名单根目标链接闭包（模块落地后填写）。
 #
-# 当前仓库尚无算法模块目录：下列清单为空；configure/install 仅导出已存在的
-# helper INTERFACE 目标（如 scan_register_spdlog / opencv_world）。模块迁入后追加名称。
+# 已落地模块：common / file_system / logging。后续模块迁入后追加到对应清单。
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -18,31 +17,52 @@ if(NOT _SR_SCOPE STREQUAL "party" AND NOT _SR_SCOPE STREQUAL "full"
     "SCAN_REGISTER_INSTALL_SCOPE must be 'party', 'full', or 'lidarstudio' (got '${SCAN_REGISTER_INSTALL_SCOPE}')")
 endif()
 
-# ---- Catalogs (append when modules land) -----------------------------------
+# ---- Catalogs --------------------------------------------------------------
 set(_SR_LIB_TARGETS_FULL
+  common
+  file_system
+  logging
 )
 
 set(_SR_HEADER_MODULES_FULL
+  common
+  file_system
+  logging
 )
 
 # Party：对外头文件模块（与库一并交付）
 set(_SR_HEADER_MODULES_PARTY
+  common
+  file_system
+  logging
 )
 
 # Party：链接闭包根目标（存在时才收集）
 set(_SR_PARTY_ROOT_TARGETS
+  common
+  file_system
+  logging
 )
 
 # Party：必须存在的 SHARED 库目标（装 .so/.dll + 对应头目录）
 set(_SR_PARTY_SHARED_TARGETS
+  common
+  file_system
+  logging
 )
 
 # LidarStudio：产品面头白名单
 set(_SR_HEADER_MODULES_LIDARSTUDIO
+  common
+  file_system
+  logging
 )
 
 # LidarStudio：链接闭包根目标
 set(_SR_LIDARSTUDIO_ROOT_TARGETS
+  common
+  file_system
+  logging
 )
 
 # Collect in-tree link closure (skip IMPORTED / genex / absolute paths / -l flags).

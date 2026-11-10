@@ -10,17 +10,19 @@
 
 ## 当前仓库状态
 
-本仓处于**脚手架阶段**：算法模块目录与根 `CMakeLists.txt` 尚未迁入，暂不可完整配置/编译。已就绪：
+根 `CMakeLists.txt` 尚未落地，整仓暂不可一键配置；已迁入基础模块与脚手架：
 
 | 路径 | 内容 |
 |------|------|
-| [`cmake/`](cmake/) | 依赖探测、compat 辅助、`find_package(scan_register)` 安装导出骨架 |
-| [`docs/`](docs/) | 字典 / 模块说明 / 计划归档（含历史能力叙述） |
+| [`common/`](common/) | 公共工具、E57 几何、WorkingFrame、内存调度（SHARED） |
+| [`file_system/`](file_system/) | 可移植文件系统与通配（SHARED） |
+| [`logging/`](logging/) | 进程内统一日志（SHARED，spdlog） |
+| [`cmake/`](cmake/) | 依赖探测、compat、`find_package(scan_register)` 安装导出 |
+| [`docs/`](docs/) | Hub/Spoke 字典与模块说明 |
 | [`rules.md`](rules.md) | 文档生成、能力复用与全局登记 |
 | [`vcpkg.json`](vcpkg.json) | 第三方依赖清单（`name`: `scan-register`） |
-| [`.cursor/rules/`](.cursor/rules/) | 双平台、动态库默认、能力登记等治理规则 |
 
-模块迁入后：在对应目录落地源码与 `CMakeLists.txt`，并把目标名追加到 [`cmake/InstallExport.cmake`](cmake/InstallExport.cmake) 的 party / full / lidarstudio 清单。
+后续模块：落地源码与 `CMakeLists.txt` 后，追加到 [`cmake/InstallExport.cmake`](cmake/InstallExport.cmake) 清单，并按 `rules.md` 登记字典。
 
 ---
 

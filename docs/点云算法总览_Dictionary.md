@@ -1,0 +1,20 @@
+# 点云算法总览（Hub）
+
+ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`rules.md`](../rules.md)。
+
+## 跨模块依赖（互用速查）
+
+| 调用方 | 被调用方 | 关键衔接点（标准中文命名 / 代码名） | 依赖类型 (仓库内/外部) | 一句话说明 |
+|--------|----------|--------------------------------------|------------------------|------------|
+| common | logging | 【日志管理器】(LogManager) | 仓库内 | 公共工具与调度输出日志 |
+| logging | spdlog | spdlog::spdlog | 外部 | 日志后端 |
+| common | Eigen3 | Eigen::Matrix / Vector | 外部 | 矩阵与坐标变换 |
+| file_system | （无仓库内） | — | — | 独立文件系统工具 |
+
+## 已登记模块
+
+| 模块 | 领域字典 | 模块说明 |
+|------|----------|----------|
+| common | [`dictionaries/公共基础_Dictionary.md`](dictionaries/公共基础_Dictionary.md) | [`modules/公共基础.md`](modules/公共基础.md) |
+| file_system | 同上 | 同上 |
+| logging | 同上 | 同上 |
