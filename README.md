@@ -19,7 +19,7 @@
 | [`common/`](common/) | 公共工具、E57 几何、WorkingFrame、内存调度（SHARED） |
 | [`file_system/`](file_system/) | 可移植文件系统与通配（SHARED） |
 | [`logging/`](logging/) | 进程内统一日志（SHARED，spdlog） |
-| [`robust_rough/`](robust_rough/) | 鲁棒粗匹配：`robust_matcher` / `robin` / `pmc` 等（**STATIC** / INTERFACE） |
+| [`robust_rough/`](robust_rough/) | 鲁棒粗匹配：`robust_matcher` / `teaser` / `robin` / `pmc` 等（**STATIC** / INTERFACE） |
 | [`cmake/`](cmake/) | 依赖探测、compat、`find_package(scan_register)` 安装导出 |
 | [`docs/`](docs/) | Hub/Spoke 字典与模块说明 |
 

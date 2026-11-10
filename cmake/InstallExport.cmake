@@ -29,6 +29,7 @@ set(_SR_LIB_TARGETS_FULL
   matcher_kdtree
   matcher_hnswlib
   pmc
+  teaser
   robin
   robust_matcher
 )
@@ -37,6 +38,7 @@ set(_SR_HEADER_MODULES_FULL
   common
   file_system
   logging
+  teaser
   robin
   robust_matcher
 )

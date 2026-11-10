@@ -12,6 +12,7 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | file_system | （无仓库内） | — | — | 独立文件系统工具 |
 | robust_matcher | robin / matcher_* | 【鲁棒匹配器】(RobustMatcher) | 仓库内 | 鲁棒粗匹配主入口 |
 | robin | pmc / xenium | 【ROBIN 内点结构】 | 仓库内 | 图论内点与最大团 |
+| teaser | pmc / PCL / FLANN | 【TEASER 对齐】(TeaserAlign) | 仓库内/外部 | TEASER++ 鲁棒刚体配准 |
 
 ## 已登记模块
 

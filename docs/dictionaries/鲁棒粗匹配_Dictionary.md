@@ -1,9 +1,9 @@
 # 鲁棒粗匹配_Dictionary
 
 大模块目录：`robust_rough/`。  
-覆盖目标：`robust_matcher`、`robin`、`pmc`、`matcher_*`、`xenium`。
+覆盖目标：`robust_matcher`、`robin`、`pmc`、`teaser`、`matcher_*`、`xenium`。
 
-**产物约定（用户明确）**：`matcher_hnswlib`、`matcher_kdtree`、`matcher_points`、`matcher_tsl`、`pmc`、`robin`、`robust_matcher` 为 **STATIC**（其中 `matcher_*` / `xenium` 为 header-only **INTERFACE**）。`xenium` 为 `robin` 的 vendored 头依赖。
+**产物约定（用户明确）**：`matcher_hnswlib`、`matcher_kdtree`、`matcher_points`、`matcher_tsl`、`pmc`、`teaser`、`robin`、`robust_matcher` 为 **STATIC**（其中 `matcher_*` / `xenium` 为 header-only **INTERFACE**）。`xenium` 为 `robin` 的 vendored 头依赖。
 
 ## 模块相互依赖关系
 
@@ -16,6 +16,8 @@
 | robust_matcher | Eigen3 / TBB / FLANN | — | 外部 | 线性代数、并行、FLANN knn |
 | robin | pmc | 【最大团】(pmc) | 仓库内 | 团求解 |
 | robin | xenium | ramalhete_queue | 仓库内 | 无锁队列 |
+| teaser | pmc | 【最大团】(pmc) | 仓库内 | TEASER 内点图/团相关 |
+| teaser | Eigen3 / FLANN / PCL | — | 外部 | 配准、特征与近邻 |
 | matcher_points | Eigen3 / TBB | — | 外部 | 点云与并行下采样 |
 
 ### 本领域被谁依赖
@@ -207,5 +209,48 @@
 ### 文件内小算法条目
 
 #### 17、无锁并发结构（xenium）
+
+待补充（需结合业务确认）
+
+---
+
+## 模块：teaser
+
+依赖摘要：STATIC；链 pmc、Eigen、FLANN、PCL（common/features/search）。
+
+### 文件级算法条目
+
+| 序号 | 标准中文命名 | 核心代码函数/类名 | 来源 | 所属模块 (私有/公共/忽略) | 一句话简述 |
+|------|--------------|-------------------|------|---------------------------|------------|
+| 18 | TEASER 配准核心 | teaser::RobustRegistrationSolver 等 | registration.h/.cpp | 公共 | TEASER++ 鲁棒刚体配准求解 |
+| 19 | TEASER 对齐封装 | teaser::TeaserAlign | teaser_align.hpp/.cpp | 公共 | 对齐流程封装（含 FGNC_TLS 等） |
+| 20 | TEASER 对应封装 | teaser::TeaserRespondence | teaser_respondence.hpp/.cpp | 公共 | 对应关系建立封装 |
+| 21 | TEASER FPFH | teaser FPFH | fpfh.h/.cpp | 公共 | TEASER 路径特征提取 |
+| 22 | TEASER 匹配器 | teaser matcher | matcher.h/.cpp | 私有 | 特征匹配 |
+| 23 | TEASER 图 | teaser::Graph | graph.h/.cpp | 私有 | 内点图结构 |
+
+### 文件内小算法条目
+
+#### 18、TEASER 配准核心（registration）
+
+待补充（需结合业务确认）
+
+#### 19、TEASER 对齐封装（TeaserAlign）
+
+待补充（需结合业务确认）
+
+#### 20、TEASER 对应封装（TeaserRespondence）
+
+待补充（需结合业务确认）
+
+#### 21、TEASER FPFH（fpfh）
+
+待补充（需结合业务确认）
+
+#### 22、TEASER 匹配器（matcher）
+
+待补充（需结合业务确认）
+
+#### 23、TEASER 图（graph）
 
 待补充（需结合业务确认）
