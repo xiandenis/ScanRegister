@@ -2,9 +2,8 @@
 
 #include "robGlob_reg_parameter.hpp"
 #include <Eigen/Dense>
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
 #include <string>
+#include <vector>
 
 namespace Ddx
 {
@@ -19,7 +18,15 @@ namespace Ddx
 
         bool setParameterFromFile(std::string const& config_file);
 
-		bool run();
+		/**
+		 * Coarse global registration on in-memory clouds.
+		 *
+		 * Consumer owns I/O and frame: apply WorkingFrame (p' = p - O) before call.
+		 * When use_compass is true, inputs MUST be station-centered: station origin at (0,0,0).
+		 * Module does not load files, infer station origin, or verify the origin.
+		 */
+		bool run(std::vector<Eigen::Vector3f> const& src,
+		         std::vector<Eigen::Vector3f> const& tgt);
 
         Eigen::Matrix4d getFinalTransformationMatrix() { return m_transformation_matrix; }
         int getFeatureNumber() { return m_feature_number; }
@@ -27,18 +34,14 @@ namespace Ddx
         bool saveResult(bool vaild);
 	private:
 
-		bool convertCloudToVec(const pcl::PointCloud<pcl::PointXYZ>& cloud, std::vector<Eigen::Vector3f>& e_cloud);
-
 		void updataCloud(std::vector<Eigen::Vector3f>& cloud, Eigen::Matrix4d const& matrix);
-
-		bool loadCloud(std::string const& file, std::vector<Eigen::Vector3f>& e_cloud);
-
 
 		bool loadResult(std::string const& file_path, Eigen::Matrix4d& matrix);
 
 		bool _run(std::vector<Eigen::Vector3f> const& src_vec, std::vector<Eigen::Vector3f> const& tgt_vec);
 
-		bool _station_lidar_device_run();
+		bool _station_lidar_device_run(std::vector<Eigen::Vector3f> const& src_vec,
+		                               std::vector<Eigen::Vector3f> const& tgt_vec);
 	private:
         RobGlobRegParameter m_parameter;
 

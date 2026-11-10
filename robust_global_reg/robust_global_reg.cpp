@@ -1,12 +1,9 @@
-
 #include "robust_global_reg.hpp"
 #include "t_coarse_check.h"
 #include <common/common.hpp>
 #include <logging/logging.hpp>
 #include <logging/tic_toc.hpp>
 #include <logging/mem_peak.hpp>
-#include <point_cloud_io/point_cloud_io.hpp>
-#include <point_cloud_io/pcse_reader.hpp>
 #include <file_system/file_system.hpp>
 #include <robust_matcher/RobustMatcher.hpp>
 #if __has_include(<rapidjson/document.h>)
@@ -33,18 +30,21 @@ std::string pathStem(std::string const& path)
 	return base;
 }
 
-/// Prefer parent folder when source is info/<scan>/voxel_*_p.pcd (common RealTimeManager path).
-std::string scanNameForMem(std::string const& path)
+/// Prefer parent folder when label looks like info/<scan>/voxel_*_p.pcd.
+std::string scanNameForMem(std::string const& label)
 {
-	std::string const stem = pathStem(path);
-	if (stem.rfind("voxel_", 0) != 0) {
-		return stem;
+	if (label.empty()) {
+		return "scan";
 	}
-	std::size_t slash = path.find_last_of("/\\");
+	std::string const stem = pathStem(label);
+	if (stem.rfind("voxel_", 0) != 0) {
+		return stem.empty() ? label : stem;
+	}
+	std::size_t slash = label.find_last_of("/\\");
 	if (slash == std::string::npos || slash == 0) {
 		return stem;
 	}
-	std::string const parent = path.substr(0, slash);
+	std::string const parent = label.substr(0, slash);
 	std::string const parent_stem = pathStem(parent);
 	return parent_stem.empty() ? stem : parent_stem;
 }
@@ -66,61 +66,45 @@ namespace Ddx
     }
 
     bool
-	RobustGlobalReg::run()
+	RobustGlobalReg::run(std::vector<Eigen::Vector3f> const& src,
+	                     std::vector<Eigen::Vector3f> const& tgt)
 	{
         m_transformation_matrix = Eigen::Matrix4d::Identity();
-		auto const path_ok = [](std::string const& path) {
-			return !path.empty()
-				&& (stlplus::file_exists(path) || point_cloud_io::is_pcse_dataset(path));
-		};
-		if (!path_ok(m_parameter.source_file))
-		{
-            LOG_ERROR("source file not exists !");
-            return false;
-        }
+		m_cost_time = 0.0;
+		m_feature_number = 0;
 
-		if (!path_ok(m_parameter.target_file))
+		if (src.empty() || tgt.empty())
 		{
-            LOG_ERROR("target file not exists !");
-            return false;
+			LOG_ERROR("empty input cloud (src={} tgt={})", src.size(), tgt.size());
+			return false;
+		}
+		if (src.size() < 10 || tgt.size() < 10)
+		{
+			LOG_ERROR("input cloud too small (src={} tgt={})", src.size(), tgt.size());
+			return false;
 		}
 
         if ((m_parameter.info & STATION_LIDAR_DEVICE) == STATION_LIDAR_DEVICE)
 		{
-			if (!_station_lidar_device_run())
-				return false;
+			return _station_lidar_device_run(src, tgt);
 		}
-		else
+
+		std::vector<Eigen::Vector3f> src_work = src;
+
+		if (m_parameter.use_compass) {
+			m_parameter.transformation_matrix.block<3, 1>(0, 3) = Eigen::Vector3d::Zero();
+		}
+
+		if ((m_parameter.info & INITI_MATRIX) == INITI_MATRIX)
 		{
-			std::vector<Eigen::Vector3f> src_vec;
-			if (!loadCloud(m_parameter.source_file, src_vec))
-			{
-                LOG_ERROR("load cloud fail! ({})", m_parameter.source_file);
-                return false;
-            }
+			updataCloud(src_work, m_parameter.transformation_matrix);
+		}
 
-			std::vector<Eigen::Vector3f> tgt_vec;
-			if (!loadCloud(m_parameter.target_file, tgt_vec))
-			{
-                LOG_ERROR("load cloud fail! ({})", m_parameter.target_file);
-				return false;
-			}
-
-			if (m_parameter.use_compass) {
-				m_parameter.transformation_matrix.block<3, 1>(0, 3) = Eigen::Vector3d::Zero();
-			}
-
-			if ((m_parameter.info & INITI_MATRIX) == INITI_MATRIX)
-			{
-				updataCloud(src_vec, m_parameter.transformation_matrix);
-			}
-
-			if (!_run(src_vec, tgt_vec)) {
-				return false;
-			}
-			if ((m_parameter.info & INITI_MATRIX) == INITI_MATRIX) {
-				m_transformation_matrix = m_transformation_matrix * m_parameter.transformation_matrix;
-			}
+		if (!_run(src_work, tgt)) {
+			return false;
+		}
+		if ((m_parameter.info & INITI_MATRIX) == INITI_MATRIX) {
+			m_transformation_matrix = m_transformation_matrix * m_parameter.transformation_matrix;
 		}
 
         return true;
@@ -145,22 +129,6 @@ namespace Ddx
 		return stlplus::file_exists(m_parameter.result_file);
 	}
 
-    bool
-	RobustGlobalReg::convertCloudToVec(
-		const pcl::PointCloud<pcl::PointXYZ>& cloud,
-		std::vector<Eigen::Vector3f>& e_cloud)
-	{
-		e_cloud.resize(cloud.size());
-		for (std::size_t i = 0; i < cloud.size(); ++i)
-		{
-			e_cloud[i] = Eigen::Vector3f(
-				cloud[i].x,
-				cloud[i].y,
-				cloud[i].z);
-		}
-		return !e_cloud.empty();
-	}
-
     void
 	RobustGlobalReg::updataCloud(std::vector<Eigen::Vector3f>& cloud, Eigen::Matrix4d const& matrix)
 	{
@@ -173,17 +141,6 @@ namespace Ddx
 		{
 			cloud[i] = R * cloud[i] + t;
 		}
-	}
-
-    bool
-	RobustGlobalReg::loadCloud(std::string const& file, std::vector<Eigen::Vector3f>& e_cloud)
-	{
-		pcl::PointCloud<pcl::PointXYZ> cloud;
-		if (Ddx::point_cloud_io::load(file, cloud) != 0)
-			return false;
-		if (cloud.size() < 10)
-			return false;
-		return convertCloudToVec(cloud, e_cloud);
 	}
 
 	bool
@@ -211,7 +168,7 @@ namespace Ddx
 	RobustGlobalReg::_run(std::vector<Eigen::Vector3f> const& src_vec, std::vector<Eigen::Vector3f> const& tgt_vec)
 	{
 		TicToc tic_toc(" global reg time : ", false);
-		std::string const mem_name = "global_reg " + scanNameForMem(m_parameter.source_file);
+		std::string const mem_name = "global_reg " + scanNameForMem(m_parameter.scan_name);
 		MemPeakScope mem_scope(mem_name);
 
 		robust_matcher::RobustMatcherConfig config(
@@ -337,23 +294,12 @@ namespace Ddx
 	}
 
     bool
-	RobustGlobalReg::_station_lidar_device_run()
+	RobustGlobalReg::_station_lidar_device_run(std::vector<Eigen::Vector3f> const& src_vec,
+	                                           std::vector<Eigen::Vector3f> const& tgt_vec)
 	{
 		TicToc tic_toc(" global station lidar time : ", false);
 
-		std::vector<Eigen::Vector3f> src_vec;
-		if (!loadCloud(m_parameter.source_file, src_vec))
-		{
-            LOG_ERROR("load cloud fail ({})", m_parameter.source_file);
-            return false;
-		}
-		std::vector<Eigen::Vector3f> tgt_vec;
-		if (!loadCloud(m_parameter.target_file, tgt_vec))
-		{
-            LOG_ERROR("load cloud fail ({})", m_parameter.target_file);
-            return false;
-        }
-		LOG_INFO("station lidar load src={} tgt={} voxel_size={:.4f} max_iters={}",
+		LOG_INFO("station lidar src={} tgt={} voxel_size={:.4f} max_iters={}",
 			src_vec.size(), tgt_vec.size(), m_parameter.voxel_size,
 			m_parameter.number_of_iterations);
 

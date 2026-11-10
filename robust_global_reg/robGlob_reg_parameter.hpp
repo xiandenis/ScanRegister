@@ -45,8 +45,8 @@ namespace Ddx
 			, info(0)
 		{};
 
-		std::string source_file;
-		std::string target_file;
+		/** Optional label for logs / MemPeak (not a file path for loading). */
+		std::string scan_name;
 		std::string result_file;
 		std::string log_file;
 		
@@ -61,6 +61,10 @@ namespace Ddx
 		float robin_noise_bound_gain;
 		float solver_noise_bound_gain;
 		bool enable_noise_bound_clamping;
+		/**
+		 * Compass constraint. When true, consumer MUST pass station-centered clouds
+		 * (station origin at (0,0,0)); module does not relocate to station frame.
+		 */
 		bool use_compass;
 		int search_knn;
 		float angle_thr;

@@ -18,7 +18,7 @@
 
 | 调用方 | 被调用方 | 关键衔接点（标准中文命名 / 代码名） | 依赖类型 (仓库内/外部) | 一句话说明 |
 |--------|----------|--------------------------------------|------------------------|------------|
-| robust_global_reg / point_cloud_io | common / logging / file_system | Common / LogManager | 仓库内 | 粗配准与点云 I/O |
+| robust_global_reg / point_cloud_io | common / logging / file_system | Common / LogManager | 仓库内 | 粗配准（内存入口）与点云 I/O |
 | （待上层业务） | common / logging / file_system | — | 仓库内 | 业务模块迁入后回填 |
 
 ---

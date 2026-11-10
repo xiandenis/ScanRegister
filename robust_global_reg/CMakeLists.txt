@@ -21,7 +21,6 @@ target_link_libraries(robust_global_reg PUBLIC
   common
   logging
   file_system
-  point_cloud_io
   robust_matcher
   Eigen3::Eigen
 )
@@ -38,7 +37,7 @@ endif()
 option(BUILD_ROBUST_GLOBAL_REG_TEST "Build robust_global_reg_test executable" OFF)
 if(BUILD_ROBUST_GLOBAL_REG_TEST)
   add_executable(robust_global_reg_test robust_global_reg_test.cpp)
-  target_link_libraries(robust_global_reg_test PRIVATE robust_global_reg)
+  target_link_libraries(robust_global_reg_test PRIVATE robust_global_reg point_cloud_io)
   scan_register_apply_compat(robust_global_reg_test)
   if(MSVC)
     target_compile_options(robust_global_reg_test PRIVATE /utf-8)
@@ -56,6 +55,7 @@ if(BUILD_GLOBAL_FAST_GICP_PIPELINE_TEST)
   add_executable(global_fast_gicp_pipeline_test global_fast_gicp_pipeline_test.cpp)
   target_link_libraries(global_fast_gicp_pipeline_test PRIVATE
     robust_global_reg
+    point_cloud_io
     fast_gicp
     octree
     overlap_estimation

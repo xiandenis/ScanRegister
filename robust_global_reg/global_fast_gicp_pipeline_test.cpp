@@ -25,6 +25,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -74,6 +75,16 @@ static bool load_slas_subtract_offset(
   const int rc = Ddx::point_cloud_io::load_slas(path, cloud, /*subtract_header_offset=*/true);
   load_ms = elapsed_ms(t0);
   return rc == 0 && !cloud.empty();
+}
+
+static void cloud_to_vec(pcl::PointCloud<pcl::PointXYZ> const& cloud,
+                         std::vector<Eigen::Vector3f>& out)
+{
+  out.resize(cloud.size());
+  for (std::size_t i = 0; i < cloud.size(); ++i)
+  {
+    out[i] = Eigen::Vector3f(cloud[i].x, cloud[i].y, cloud[i].z);
+  }
 }
 
 static pcl::PointCloud<pcl::PointXYZ>::Ptr octree_downsample(
@@ -317,20 +328,24 @@ int wmain(int argc, wchar_t* argv[])
   const fs::path output_dir = fs::temp_directory_path() / "global_fast_gicp_pipeline_test";
   fs::create_directories(output_dir);
 
+  std::vector<Eigen::Vector3f> src_vec;
+  std::vector<Eigen::Vector3f> tgt_vec;
+  cloud_to_vec(source_cloud, src_vec);
+  cloud_to_vec(target_cloud, tgt_vec);
+
   Ddx::RobGlobRegParameter param;
-  param.source_file = source_file;
-  param.target_file = target_file;
+  param.scan_name = source_path.stem().string();
   param.result_file = narrow_path(output_dir / "coarse_result.json");
   param.log_file = narrow_path(output_dir / "coarse_reg.log");
   param.voxel_size = voxel_size;
   param.close_log = false;
 
-  std::cout << "running coarse global registration (RobustGlobalReg)...\n";
+  std::cout << "running coarse global registration (RobustGlobalReg, in-memory)...\n";
   std::cout.flush();
 
   Ddx::RobustGlobalReg reg(param);
   const auto coarse_t0 = std::chrono::steady_clock::now();
-  const bool coarse_ok = reg.run();
+  const bool coarse_ok = reg.run(src_vec, tgt_vec);
   timing.coarse_reg_ms = elapsed_ms(coarse_t0);
 
   std::cout << "coarse run(): " << (coarse_ok ? "success" : "failed") << "\n";

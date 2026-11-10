@@ -4,10 +4,14 @@
 #include <logging/logging.hpp>
 #include <point_cloud_io/point_cloud_io.hpp>
 
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+
 #include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -48,6 +52,17 @@ static std::string resolve_source_path(fs::path const& requested)
 	return narrow_path(requested);
 }
 
+static bool cloud_to_vec(pcl::PointCloud<pcl::PointXYZ> const& cloud,
+                         std::vector<Eigen::Vector3f>& out)
+{
+	out.resize(cloud.size());
+	for (std::size_t i = 0; i < cloud.size(); ++i)
+	{
+		out[i] = Eigen::Vector3f(cloud[i].x, cloud[i].y, cloud[i].z);
+	}
+	return !out.empty();
+}
+
 int wmain(int argc, wchar_t* argv[])
 {
 	const fs::path default_source =
@@ -65,7 +80,7 @@ int wmain(int argc, wchar_t* argv[])
 
 	std::cout << "=== robust_global_reg test ===\n";
 	std::cout << "voxel_size: 0.3\n";
-	std::cout << "LAS/SLAS load: subtract header offset (default)\n";
+	std::cout << "consumer I/O: point_cloud_io load (caller-managed frame)\n";
 	std::cout << "source: " << source_file << "\n";
 	std::cout << "target: " << target_file << "\n\n";
 	std::cout.flush();
@@ -81,22 +96,42 @@ int wmain(int argc, wchar_t* argv[])
 		return 1;
 	}
 
+	pcl::PointCloud<pcl::PointXYZ> src_cloud;
+	pcl::PointCloud<pcl::PointXYZ> tgt_cloud;
+	if (Ddx::point_cloud_io::load(source_file, src_cloud) != 0)
+	{
+		std::cerr << "failed to load source\n";
+		return 1;
+	}
+	if (Ddx::point_cloud_io::load(target_file, tgt_cloud) != 0)
+	{
+		std::cerr << "failed to load target\n";
+		return 1;
+	}
+
+	std::vector<Eigen::Vector3f> src_vec;
+	std::vector<Eigen::Vector3f> tgt_vec;
+	if (!cloud_to_vec(src_cloud, src_vec) || !cloud_to_vec(tgt_cloud, tgt_vec))
+	{
+		std::cerr << "empty cloud after load\n";
+		return 1;
+	}
+
 	const fs::path output_dir = fs::temp_directory_path() / "robust_global_reg_test";
 	fs::create_directories(output_dir);
 
 	Ddx::RobGlobRegParameter param;
-	param.source_file = source_file;
-	param.target_file = target_file;
+	param.scan_name = fs::path(source_file).stem().string();
 	param.result_file = narrow_path(output_dir / "result.json");
 	param.log_file = narrow_path(output_dir / "reg.log");
 	param.voxel_size = 0.3f;
 	param.close_log = false;
 
-	std::cout << "running RobustGlobalReg...\n";
+	std::cout << "running RobustGlobalReg (in-memory)...\n";
 	std::cout.flush();
 
 	Ddx::RobustGlobalReg reg(param);
-	const bool ok = reg.run();
+	const bool ok = reg.run(src_vec, tgt_vec);
 
 	std::cout << "run(): " << (ok ? "success" : "failed") << "\n";
 	std::cout << "feature number: " << reg.getFeatureNumber() << "\n";

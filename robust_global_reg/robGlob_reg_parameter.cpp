@@ -43,31 +43,15 @@ namespace Ddx
 
 		rapidjson::Value& jsonObj = doc;
 
-		// Required parameters
-		if (!jsonObj.HasMember("source_file"))
-		{
-            LOG_ERROR(" has not source_file field ");
-			return false;
+		if (jsonObj.HasMember("scan_name")) {
+			scan_name = jsonObj["scan_name"].GetString();
 		}
-		if (!jsonObj.HasMember("target_file"))
-		{
-			LOG_ERROR(" has not target_file field ");
-			return false;
+		if (jsonObj.HasMember("result_file")) {
+			result_file = jsonObj["result_file"].GetString();
 		}
-		if (!jsonObj.HasMember("result_file"))
-		{
-			LOG_ERROR(" has not result_file field ");
-			return false;
+		if (jsonObj.HasMember("log_file")) {
+			log_file = jsonObj["log_file"].GetString();
 		}
-		if (!jsonObj.HasMember("log_file"))
-		{
-			LOG_ERROR(" has not log_file field ");
-			return false;
-		}
-		source_file = jsonObj["source_file"].GetString();
-		target_file = jsonObj["target_file"].GetString();
-		result_file = jsonObj["result_file"].GetString();
-		log_file = jsonObj["log_file"].GetString();
 
 		// Optional parameters
 		if (jsonObj.HasMember("voxel_size")) {
@@ -187,8 +171,7 @@ namespace Ddx
 			return false;
 
 		outF << "{" << std::endl;
-		outF << "\t\"source_file\" : \"" << source_file << "\"," << std::endl;
-		outF << "\t\"target_file\" : \"" << target_file << "\"," << std::endl;
+		outF << "\t\"scan_name\" : \"" << scan_name << "\"," << std::endl;
 		outF << "\t\"result_file\" : \"" << result_file << "\"," << std::endl;
 		outF << "\t\"log_file\" : \"" << log_file << "\"," << std::endl;
 

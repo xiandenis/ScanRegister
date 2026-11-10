@@ -21,8 +21,8 @@
 | [`logging/`](logging/) | 进程内统一日志（SHARED，spdlog） |
 | [`robust_rough/`](robust_rough/) | 鲁棒粗匹配：`robust_matcher` / `teaser` / `robin` / `pmc` 等（**STATIC** / INTERFACE） |
 | [`robust_refine/`](robust_refine/) | 鲁棒精配：`basic_icp` / `small_gicp` / `genz_icp` / `fast_gicp`（**STATIC** / INTERFACE） |
-| [`point_cloud_io/`](point_cloud_io/) | 点云多格式 I/O（SHARED；`robust_global_reg` 依赖） |
-| [`robust_global_reg/`](robust_global_reg/) | 粗全局配准（**STATIC**） |
+| [`point_cloud_io/`](point_cloud_io/) | 点云多格式 I/O（SHARED；由调用方/测试链接） |
+| [`robust_global_reg/`](robust_global_reg/) | 粗全局配准（**STATIC**；纯内存入口） |
 | [`cmake/`](cmake/) | 依赖探测、compat、`find_package(scan_register)` 安装导出 |
 | [`docs/`](docs/) | Hub/Spoke 字典与模块说明 |
 
