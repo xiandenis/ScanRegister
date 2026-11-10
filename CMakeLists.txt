@@ -52,12 +52,16 @@ include(Dependencies)
 add_subdirectory(logging)
 add_subdirectory(file_system)
 add_subdirectory(common)
+add_subdirectory(point_cloud_io)
 
 # Robust coarse-matching stack (STATIC / header INTERFACE leaves under robust_rough/).
 add_subdirectory(robust_rough)
 
 # Fine / ICP refine stack (STATIC leaves under robust_refine/; needs matcher_tsl).
 add_subdirectory(robust_refine)
+
+# Coarse global registration (needs robust_matcher + point_cloud_io).
+add_subdirectory(robust_global_reg)
 
 # Umbrella INTERFACE for Session/foundation consumers: scan_register::scan_register
 # (refine / rough targets are opt-in: link scan_register::<target> explicitly.)

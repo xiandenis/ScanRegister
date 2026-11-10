@@ -35,7 +35,8 @@ foreach(_sr_tgt IN ITEMS
     common file_system logging scan_register
     xenium matcher_tsl matcher_points matcher_kdtree matcher_hnswlib
     pmc teaser robin robust_matcher
-    basic_icp fast_gicp small_gicp genz_icp)
+    basic_icp fast_gicp small_gicp genz_icp
+    point_cloud_io robust_global_reg)
   if(TARGET scan_register::${_sr_tgt} AND NOT TARGET ${_sr_tgt})
     add_library(${_sr_tgt} ALIAS scan_register::${_sr_tgt})
   endif()

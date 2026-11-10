@@ -15,6 +15,8 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | teaser | pmc / PCL / FLANN | 【TEASER 对齐】(TeaserAlign) | 仓库内/外部 | TEASER++ 鲁棒刚体配准 |
 | genz_icp | matcher_tsl / PCL / TBB | 【GenZ-ICP】(genz_icp) | 仓库内/外部 | 精配准后端之一 |
 | small_gicp / basic_icp / fast_gicp | Eigen / PCL / OpenMP | 精配 ICP 集合 | 仓库内/外部 | `robust_refine/` |
+| robust_global_reg | robust_matcher / point_cloud_io | 【鲁棒全局配准】(RobustGlobalReg) | 仓库内 | 站间粗全局配准 |
+| point_cloud_io | logging / PCL / PDAL | 【点云读写】 | 仓库内/外部 | 多格式点云 I/O |
 
 ## 已登记模块
 
@@ -25,3 +27,4 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | logging | 同上 | 同上 |
 | robust_matcher 等（`robust_rough/`） | [`dictionaries/鲁棒粗匹配_Dictionary.md`](dictionaries/鲁棒粗匹配_Dictionary.md) | [`modules/鲁棒粗匹配.md`](modules/鲁棒粗匹配.md) |
 | basic_icp 等（`robust_refine/`） | [`dictionaries/鲁棒精配_Dictionary.md`](dictionaries/鲁棒精配_Dictionary.md) | [`modules/鲁棒精配.md`](modules/鲁棒精配.md) |
+| robust_global_reg / point_cloud_io | [`dictionaries/粗全局配准_Dictionary.md`](dictionaries/粗全局配准_Dictionary.md) | [`modules/粗全局配准.md`](modules/粗全局配准.md) |

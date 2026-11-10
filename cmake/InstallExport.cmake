@@ -5,7 +5,8 @@
 #   full            — 全量库目标与头模块清单（模块落地后填写）。
 #   lidarstudio     — LidarStudio 产品白名单根目标链接闭包（模块落地后填写）。
 #
-# 已落地：common / file_system / logging / robust_rough/* / robust_refine/*。
+# 已落地：common / file_system / logging / point_cloud_io /
+#         robust_rough/* / robust_refine/* / robust_global_reg。
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -36,6 +37,8 @@ set(_SR_LIB_TARGETS_FULL
   fast_gicp
   small_gicp
   genz_icp
+  point_cloud_io
+  robust_global_reg
 )
 
 set(_SR_HEADER_MODULES_FULL
@@ -49,6 +52,8 @@ set(_SR_HEADER_MODULES_FULL
   fast_gicp
   small_gicp
   genz_icp
+  point_cloud_io
+  robust_global_reg
 )
 
 # Party：对外头文件模块（与库一并交付）

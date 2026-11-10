@@ -42,7 +42,7 @@ if(BUILD_GENZ_ICP_COMPILE_TEST)
   endif()
 endif()
 
-# Requires point_cloud_io (not yet in this repo).
+# Requires point_cloud_io (now in-tree).
 option(BUILD_GENZ_ICP_PAIR "Build genz_icp pair registration tool" OFF)
 if(BUILD_GENZ_ICP_PAIR)
   if(NOT TARGET point_cloud_io)
