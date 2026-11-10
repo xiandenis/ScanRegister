@@ -27,6 +27,7 @@
 | genz_icp_pair 等 | point_cloud_io | 同上 | 仓库内 | 读盘后对 init/结果做 origin 系变换 |
 | resolution_estimate_test | point_cloud_io | 同上 | 仓库内 | 站心 LAS：load 后 `local+origin` 再估径向深度 |
 | registration_initializer | point_cloud_io | 同上 | 仓库内 | load 后 local+origin−ScanInfo.station_origin_ → 站心系再 Root/分辨率 |
+| rough_global_reg | point_cloud_io | 同上 | 仓库内 | 门面自 ScanInfo.lasFn_ 加载；世界系 guess/结果折回 |
 
 ---
 

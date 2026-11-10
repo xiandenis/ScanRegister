@@ -1,0 +1,58 @@
+#pragma once
+
+#include <registration_type/registration_type.hpp>
+#include <Eigen/Dense>
+#include <string>
+#include <vector>
+
+namespace Ddx
+{
+    /**
+     * Business facade over RobustGlobalReg.
+     *
+     * - ScanInfo: load lasFn_ as FramedCloud (IO localize); optional station fold for compass.
+     * - LidarFrame: load station-centered voxel_3 cache (no FramedCloud re-localize);
+     *   pose fold uses ScanInfo.station_origin_ (file CRS). Requires has_station_origin_.
+     *
+     * Compass: only on station-centered data (has_station_origin_ + SENSOR_COMPASS).
+     * guess / AlignResult.matrix_ are file/world frame.
+     */
+    class RoughGlobalReg
+    {
+    public:
+        // --- ScanInfo (raw lasFn_ via FramedCloud) ---
+        bool run(ScanInfo const& source, ScanInfo const& target, float resolution,
+                 Eigen::Matrix4d const& guess, int iter_number = -1, bool use_compass = false);
+        bool run(ScanInfo const& source, ScanInfo const& target, float resolution,
+                 int iter_number = -1);
+
+        // --- LidarFrame (voxel_3 station-centered cache) ---
+        bool run(LidarFrame const& source, LidarFrame const& target, float resolution,
+                 Eigen::Matrix4d const& guess, int iter_number = -1, bool use_compass = false);
+        bool run(LidarFrame const& source, LidarFrame const& target, float resolution,
+                 int iter_number = -1);
+
+        AlignResult getAlignResult() const { return m_alignResult; }
+
+    private:
+        static int resolveIterationCount(float resolution, int iter_number);
+        /** SENSOR_COMPASS on both AND has_station_origin_ on both. */
+        static bool canUseCompass(ScanInfo const& source, ScanInfo const& target);
+        static bool resolveUseHnswKnn(float resolution);
+        static bool resolveUseFeatSpatialBudget(float resolution);
+
+        bool runFromScanInfo(ScanInfo const& source, ScanInfo const& target, float resolution,
+                             int iter_number, bool use_compass,
+                             Eigen::Matrix4d const* initial_guess_world);
+        bool runFromLidarFrame(LidarFrame const& source, LidarFrame const& target, float resolution,
+                               int iter_number, bool use_compass,
+                               Eigen::Matrix4d const* initial_guess_world);
+        bool runKernel(std::string const& src_name, std::string const& tgt_name,
+                       std::vector<Eigen::Vector3f>& src_vec, std::vector<Eigen::Vector3f>& tgt_vec,
+                       Eigen::Vector3d const& O_s, Eigen::Vector3d const& O_t, float resolution,
+                       int iter_number, bool use_compass,
+                       Eigen::Matrix4d const* initial_guess_world);
+
+        AlignResult m_alignResult;
+    };
+}

@@ -23,6 +23,9 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | genz_icp | matcher_tsl / PCL / TBB | 【GenZ-ICP】(genz_icp) | 仓库内/外部 | 精配准后端之一 |
 | small_gicp / basic_icp / fast_gicp | Eigen / PCL / OpenMP | 精配 ICP 集合 | 仓库内/外部 | `robust_refine/` |
 | robust_global_reg | robust_matcher | 【鲁棒全局配准】(RobustGlobalReg) | 仓库内 | 站间粗全局配准（内存点云；I/O 由调用方） |
+| rough_global_reg | robust_global_reg | 【粗全局配准门面】(RoughGlobalReg) | 仓库内 | ScanInfo→FramedCloud→RobustGlobalReg；位姿折回 |
+| rough_global_reg | point_cloud_io | 【FramedCloud】(load) | 仓库内 | 门面读 `ScanInfo.lasFn_` |
+| rough_global_reg | registration_type | 【扫描信息】/【配准边结果】 | 仓库内 | 输入 ScanInfo，输出 AlignResult |
 | fastreg_filter | logging / OpenCV / Eigen / OpenMP | 【全景深度差分滤波】/【空间透视差分滤波】 | 仓库内/外部 | 深度图邻域差分统计异常/重叠率（STATIC） |
 | global_matrix_file | common / logging / RapidJSON | 【全局位姿文件读写】(GlobalMatrixFileIO) | 仓库内/外部 | 多站全局位姿 JSON loading/saving（STATIC） |
 | depth_map_tool | common / OpenCV / PCL / TBB | 【深度图工具】(DepthMapTool) | 仓库内/外部 | 点云→全景深度与格式转换（STATIC） |
@@ -47,6 +50,7 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | robust_matcher 等（`robust_rough/`） | [`dictionaries/鲁棒粗匹配_Dictionary.md`](dictionaries/鲁棒粗匹配_Dictionary.md) | [`modules/鲁棒粗匹配.md`](modules/鲁棒粗匹配.md) |
 | basic_icp 等（`robust_refine/`） | [`dictionaries/鲁棒精配_Dictionary.md`](dictionaries/鲁棒精配_Dictionary.md) | [`modules/鲁棒精配.md`](modules/鲁棒精配.md) |
 | robust_global_reg | [`dictionaries/粗全局配准_Dictionary.md`](dictionaries/粗全局配准_Dictionary.md) | [`modules/粗全局配准.md`](modules/粗全局配准.md) |
+| **rough_global_reg** | 同上 | 同上 |
 | **fastreg_filter** | [`dictionaries/FastReg滤波_Dictionary.md`](dictionaries/FastReg滤波_Dictionary.md) | [`modules/FastReg滤波.md`](modules/FastReg滤波.md) |
 | **global_matrix_file** | [`dictionaries/全局位姿文件_Dictionary.md`](dictionaries/全局位姿文件_Dictionary.md) | [`modules/全局位姿文件.md`](modules/全局位姿文件.md) |
 | **depth_map_tool** | [`dictionaries/深度图工具_Dictionary.md`](dictionaries/深度图工具_Dictionary.md) | [`modules/深度图工具.md`](modules/深度图工具.md) |

@@ -74,6 +74,9 @@ add_subdirectory(registration_initializer)
 # Coarse global registration (needs robust_matcher + point_cloud_io).
 add_subdirectory(robust_global_reg)
 
+# Coarse global registration business facade (ScanInfo → FramedCloud → RobustGlobalReg).
+add_subdirectory(rough_global_reg)
+
 # Umbrella INTERFACE for Session/foundation consumers: scan_register::scan_register
 # (refine / rough targets are opt-in: link scan_register::<target> explicitly.)
 add_library(scan_register INTERFACE)
