@@ -59,6 +59,7 @@ add_subdirectory(global_matrix_file)
 add_subdirectory(depth_map_tool)
 add_subdirectory(octree)
 add_subdirectory(overlap_estimation)
+add_subdirectory(resolution_estimate)
 
 # Robust coarse-matching stack (STATIC / header INTERFACE leaves under robust_rough/).
 add_subdirectory(robust_rough)

@@ -7,7 +7,7 @@
 #
 # 已落地：common / file_system / logging / graph / point_cloud_io /
 #         fastreg_filter / global_matrix_file / depth_map_tool /
-#         octree / overlap_estimation /
+#         octree / overlap_estimation / resolution_estimate /
 #         robust_rough/* / robust_refine/* / robust_global_reg。
 
 include(GNUInstallDirs)
@@ -46,6 +46,7 @@ set(_SR_LIB_TARGETS_FULL
   depth_map_tool
   octree
   overlap_estimation
+  resolution_estimate
   robust_global_reg
 )
 
@@ -67,6 +68,7 @@ set(_SR_HEADER_MODULES_FULL
   depth_map_tool
   octree
   overlap_estimation
+  resolution_estimate
   robust_global_reg
 )
 

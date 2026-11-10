@@ -17,5 +17,6 @@
 | [`深度图工具_Dictionary.md`](深度图工具_Dictionary.md) | `depth_map_tool`（全景深度生成与格式转换） |
 | [`八叉树_Dictionary.md`](八叉树_Dictionary.md) | `octree`（Medoid / FastOctree / 中心近邻） |
 | [`重叠估计_Dictionary.md`](重叠估计_Dictionary.md) | `overlap_estimation`（体素重叠 / 配准子集） |
+| [`分辨率估计_Dictionary.md`](分辨率估计_Dictionary.md) | `resolution_estimate`（直方图 / 分位数体素） |
 
 Hub 总览：[`../点云算法总览_Dictionary.md`](../点云算法总览_Dictionary.md)。

@@ -12,5 +12,6 @@
 | [`深度图工具.md`](深度图工具.md) | `depth_map_tool`（全景深度生成与格式转换） |
 | [`八叉树.md`](八叉树.md) | `octree`（Medoid / FastOctree / 中心近邻） |
 | [`重叠估计.md`](重叠估计.md) | `overlap_estimation`（体素重叠 / 配准子集） |
+| [`分辨率估计.md`](分辨率估计.md) | `resolution_estimate`（直方图 / 分位数体素） |
 
 字典条目见 [`../dictionaries/`](../dictionaries/)。
