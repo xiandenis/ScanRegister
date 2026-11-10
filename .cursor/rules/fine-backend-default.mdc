@@ -1,0 +1,36 @@
+---
+description: 链式 Fine 与 GLC KNN 中段默认 SmallGICP；终精配 Trim/GenZ 可配；改默认须二次确认
+alwaysApply: true
+---
+
+# 精配准挂点默认与对照口径
+
+## 1. 链式主配准 Fine
+
+**路径**：`RegularRegister` / `FpfhRegister` → `FineRegistration`（Session `setFineBackend`）。
+
+- **默认** `AlgorithmType::kSmallGicp`；无特殊强调时 **基本不动**。
+- 要改 Fine 后端须 **二次确认**（与 [`engineering-judgment-over-preference.mdc`](engineering-judgment-over-preference.mdc) 同级）。
+
+## 2. GLC Pose KNN 流水线
+
+**默认顺序**（无二次确认 **不要**改前两段）：
+
+1. **粗配准**（Rough）
+2. **SmallGICP**（中间精化，`runSmallGicpFine`）
+3. **终精配**（默认 TrimICP+NC；**可配置**为 GenZ 等）
+
+- 「粗配准后接着 SmallGICP」即使口头强调要换，也须 **二次确认** 才能改。
+- 「然后再 TrimICP」这一档 **可以配置替换**（`GlobalLoopClosureOptions.backend` → `kTrimIcp` / `kGenZIcp`）。
+- **2-hop** 路径的终精配同样走该可配置档（默认 Trim）。
+
+## 3. 「Trim vs GenZ 对照」指什么
+
+用户说「trim_icp 和 genz_icp 对比」时，默认对比的是 **可配置终精配挂点**，不是链式 Fine，也不是 KNN 中间的 SmallGICP：
+
+| 挂点 | 默认 | 对照时 |
+|------|------|--------|
+| 链式 Fine | SmallGICP | **不动**（除非二次确认） |
+| GEO 边再精化 | TrimICP+NC | Trim ↔ GenZ |
+| GLC 2-hop 终精配 | TrimICP+NC | Trim ↔ GenZ |
+| GLC KNN：粗 → SmallGICP → 终精配 | 前两段固定；终精配 Trim | **只换终精配** Trim ↔ GenZ |

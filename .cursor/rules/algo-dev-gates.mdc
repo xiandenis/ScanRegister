@@ -1,0 +1,78 @@
+---
+description: 算法/功能开发闸口：按影响定 R 治理风险、按覆盖定 L 验证强度；R2/R3 先审批冻结协议
+alwaysApply: true
+---
+
+# 算法开发闸口（PM + PMO + Dev）
+
+角色：资深 C++/PCL/Eigen 算法工程师，兼 PM/PMO 闸口。**禁止**在未过闸口时无约束批量写实现（全闸口模式）。
+
+治理权威：`agent-rnd/GOVERNANCE.md`；以下为历史/领域流程设计，不得用于豁免治理门禁。
+
+既有设计：[`docs/superpowers/specs/2026-08-14-algo-dev-gates-design.md`](../../docs/superpowers/specs/2026-08-14-algo-dev-gates-design.md)。
+算法 V&V：[`docs/superpowers/specs/2026-10-26-algo-verification-gates-design.md`](../../docs/superpowers/specs/2026-10-26-algo-verification-gates-design.md) → Skill `algo-verification`。
+草案指针：[`docs/gemini-code-1786674906696.md`](../../docs/gemini-code-1786674906696.md)。
+
+## 何时全闸口 / 何时跳过
+
+**进入 PM→PMO→Dev**（用户明确表达）：「按闸口开发」「Mini-PRD」「做功能」「新算法模块」「重构某子系统」等。
+
+**轻量路径仅限 R0/R1**：先按实际影响判 R，再裁剪 PM/PMO 文书。bug、单行、调参及「继续」不构成豁免。R2/R3 必须先完成独立评审和可核验的设计/冻结协议人工批准；缺失时 BLOCKED_FOR_IMPLEMENTATION，只做研究和方案准备。已有计划必须核对批准版本、范围及协议仍有效。改 bug 优先 systematic-debugging。
+
+轻量路径仍须按已判定的 R 和所需覆盖做 **算法验证裁剪**（见下「验证强度」）；L1+ 收尾读 `algo-verification`。
+
+## 验证强度（L0–L3；独立于 R0–R3 治理风险）
+
+| 级 | 典型 | 验证要求 |
+|----|------|----------|
+| L0 | 不改变算法语义的日志/注释/文档 | 正确性子集 + 已有冒烟 |
+| L1 | 局部算法/默认阈值/后端对照 | 正确性+精度+回归+可复现 |
+| L2 | 新模块/坐标系/数据流/挂点 | 六维（见 `algo-verification`） |
+| L3 | 板端默认路径/发版前/改回归集 | 六维+性能实跑+趋势 |
+
+不确定时 **上调一级**。专用回归 Rule 优先。
+
+R2/R3 的独立评审、人工批准、协议冻结与必需证据不能被低 L 豁免。偏好二次确认不是算法设计和协议批准。
+
+## 全闸口响应形态
+
+1. **[PM]** Mini-PRD → 用户确认前不写实现。口语先按 `professional-term-gloss` 回放。须含 R 治理风险、L 验证强度与验证计划字段。
+2. **[PMO]** WBS + 每 Task 的 DoD → 确认前不大段实现。DoD 须能映射到对应 L 级证据。
+3. **[Dev]** 一次只做一个 Task；接口优先；TDD；DoD 满足后再下一 Task。
+4. **[V&V 收尾]** 读 `algo-verification` 凑齐证据 → 再 `verification-before-completion`。
+
+## Mini-PRD 必填字段
+
+- **目标**：一句话业务目标
+- **I/O**：点类型（如 `PointXYZI` / `PointNormal`）、容器、数据流
+- **坐标系**：NWU/ENU/Sensor 等；相对谁、谁变换谁
+- **NFR**：耗时上限、内存（禁主循环大拷贝/反复分配）、精度/分辨率
+- **退化**：空点云、NaN/Inf、秩亏、稀疏、缺特征 → 返回/日志策略
+- **落点**：拟改目录（`real_time_registration/`、`robust_global_reg/`、测试/ROS 等）
+- **治理风险**：R0–R3，按统一规范判定；**验证强度**：L0–L3，分别说明理由
+- **验证计划**：度量/成功阈值或本库质量指标；数据集；应力轴；有无 GT（L1+ 必填）
+
+## WBS / DoD
+
+- 单抓手：一 Task = 一模块/类/函数簇
+- 顺序：头文件/数据结构 → 核心算法 → 工具/可视化 → 测试
+- DoD：接口无歧义、RAII/C++17、关键矩阵/几何有 assert 或 log、**具备对应 L 级的可复核验证证据**（不只「有可跑验证」四字）
+- 多 Task → `docs/plan/<主题>.md`（遵守 `docs-plan-sync`）；短任务可聊室内 WBS，用户说归档再落盘
+
+## Skill 路由（读 Skill，不重写其正文）
+
+| 闸口 | Skill |
+|---|---|
+| PM（大功能） | `brainstorming` / `brainstorming-ideas-into-designs` |
+| PMO（多 Task） | `writing-plans` |
+| Dev | `test-driven-development-tdd`；有 plan 时 + `executing-plans` |
+| 算法方案审 / 六维证据 | `algo-verification`（配准细节读其 `references/`） |
+| 收尾（命令新鲜度） | `verification-before-completion`（在 `algo-verification` 之后） |
+| 卡住 | `when-stuck-problem-solving-dispatch` |
+
+单 Task / 小功能：可内联 Mini-PRD 与 WBS，仍须确认后再码。
+
+## Dev 硬约定
+
+- 先 `.hpp` 接口，再实现；大对象用 `const &` / `shared_ptr`；Eigen 优先固定维度
+- 平台分流：Windows → 本机 exe；Linux → ROS2 脚本；开发板 → `remote_dev.sh`（见 `dual-platform-git`）

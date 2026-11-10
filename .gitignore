@@ -1,0 +1,82 @@
+# Build / install
+/build/
+/out/
+/cmake-build-*/
+/install/
+/install_party/
+/ros2_ws/
+/ros_ws_ssh/
+/CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+CMakeUserPresets.json
+
+# vcpkg
+/vcpkg_installed/
+/.vcpkg-root
+vcpkg_cache/
+
+# Visual Studio / MSVC
+.vs/
+*.user
+*.suo
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+ipch/
+x64/
+x86/
+Win32/
+[Dd]ebug/
+[Rr]elease/
+[Rr]elWithDebInfo/
+[Mm]inSizeRel/
+
+# Binaries / libs
+*.exe
+*.dll
+*.so
+*.so.*
+*.dylib
+*.a
+*.lib
+*.pdb
+*.ilk
+*.exp
+*.obj
+*.o
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# IDE / OS
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs / temp / local data
+*.log
+*.tmp
+*.temp
+/tmp/
+/temp/
+*.las
+*.slas
+*.pcd
+*.ply
+*.e57
+
+# Local agent / editor noise (keep tracked project rules under .cursor/rules)
+.cursor/*.log
+.cursor/projects/

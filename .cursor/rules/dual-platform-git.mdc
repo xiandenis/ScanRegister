@@ -1,0 +1,65 @@
+---
+description: 长期主线 main / windows / lidarstudio；Windows·Linux 构建分流与按需互合
+alwaysApply: true
+---
+
+# 多主线协作（main + windows + lidarstudio）
+
+本仓库**一套代码、两条构建环境**（Linux / Windows），并用**三条长期主线**分别承载日常开发落点。
+
+## 分支策略
+
+1. **长期分支**
+   - `main`：Linux 主线（含 ROS 2 / 开发板联调相关改动的默认落点）。
+   - `windows`：Windows 主线（VS + vcpkg 构建、Windows 本机算法库联调的默认落点）。
+   - `lidarstudio`：与 `windows` **同级**的长期主线，专门承载对接 **LidarStudio**（产品仓，如 `light_dance/lidarstudio`）的适配与联调；构建工具链与 Windows 本机一致。
+2. **日常开发**：从对应主线创建短生命周期分支，经 PR、所需审核与必需检查后合入同一主线；不从旧规则推导长期分支直推授权。
+3. **跨主线同步**
+   - 平台互合：`main` ↔ `windows`（在同步分支解决差异，再向目标主线发 PR；冲突解决后重跑目标平台相关检查）。
+   - 产品互合：`windows` ↔ `lidarstudio`（通用算法/库改动优先落 `windows` 再同步；仅 LidarStudio 对接差异落 `lidarstudio`）。
+   - 需要时亦可经同步分支做 `main` ↔ `lidarstudio`，但默认经 `windows` 中转，减少三方分叉。
+4. **不要**另建长期 linux 分支；Linux 侧仍是 `main`。
+
+## 日常节奏与部署状态
+
+1. 开工只读检查分支与工作树，保留未提交修改；不得自动 pull/merge 覆盖当前工作。
+2. 小步实施并验证；提交、推送及远端操作按任务授权执行，不因“一小步”自动推送。
+3. 跨主线合并须记录双方版本、实际冲突处理和目标平台证据；实质修改后旧批准/结果重新核验。
+4. 提交说明用中文，身份沿用仓库配置。统一门禁见 agent-rnd/GOVERNANCE.md。
+5. 上述是目标流程。CI、分支保护、必需状态检查及远端权限本批未配置/未验证（NOT_RUN），不能宣称平台已阻止绕过。实际平台批准前不得用自然语言门禁代替真实保护。
+
+## 构建与联调路由（按本机 OS，禁止混用）
+
+| 本机 OS | 算法库编译 | 「测试数据 / 测试实时配准」 | ROS 2 |
+|---------|------------|------------------------------|-------|
+| **Windows**（含在 `lidarstudio` 上开发） | `.\scripts\build_windows.ps1`（默认 install → `install_party\<Config>\`；`-Publish` → `third-party-library` 独立分支）/ VS + vcpkg | `build\bin\Release\real_time_manager_test.exe` | **不走本机 ROS2**；仅用户说「开发板」时用 `remote_dev.sh` |
+| **Ubuntu / Linux** | `cmake -S . -B build && cmake --build build` | **走 ROS2**：`./ros2/test_ros2.sh …`（默认不开网页；要盯测再加 `--dashboard`） | **可以且应当**：`./ros2/build_ros2.sh` / colcon → `ros2_ws/` |
+| **开发板**（用户明确提） | — | `./remote_dev.sh test-ros2 …` | `./remote_dev.sh build-ros2` → `ros_ws_ssh/` |
+
+`logging` 为动态库；运行/部署时需能加载 `logging.dll` / `liblogging.so`。
+
+### Ubuntu / Linux：走 ROS2（正确路径）
+
+用户在 **Ubuntu / Linux 本机** 时，「编译 ros2」「测试数据」等按 [`ros2-build-test.mdc`](ros2-build-test.mdc) 执行即可，这是该平台的默认实时配准联调方式。
+
+### Windows 本机环境（强制）
+
+用户在 **Windows**（`win32` / PowerShell / VS + vcpkg）提问时，**只允许**使用本机 Windows 工具链与产物，**禁止**为「本机编译 / 本机测试」去碰 WSL、或把本机 Windows 会话伪装成 Ubuntu 去跑 `build_ros2.sh` / `test_ros2.sh`。
+
+| 场景 | Windows 正确做法 | 禁止 |
+|------|------------------|------|
+| 编译算法库 | `.\scripts\build_windows.ps1`（默认再 install → `<repo>\install_party\<Config>`，可用 `-Prefix` 改根；`-Scope full -Publish` 发到 `third-party-library.git` 分支 `real_time_registration`，tag `real_time_registration/vX.Y.Z`）或 `cmake --build build --config Release` | `wsl … cmake`、WSL 内 `build/` |
+| 「测试数据 / 测试实时配准」+ 数据/工程路径 | `build\bin\Release\real_time_manager_test.exe <数据> <工程>`（`PATH` 含同目录 `logging.dll`） | 在 Windows 本机用 WSL 跑 `ros2/test_ros2.sh` |
+| 中文数据路径 | 用 `mklink /J` 建 ASCII junction 再测（PDAL 不认中文路径） | 为绕开路径问题改去 WSL |
+| ROS 2 | 仅「开发板」→ `remote_dev.sh` | 在 Windows 上假装有本机 ROS2 / 用 WSL 当本机 Ubuntu ROS2 |
+
+例外：用户**明确**要求「用 WSL / 在 Ubuntu 里编」时才可例外；默认不要提议、不要探测、不要尝试。
+
+## Agent 注意
+
+- 用户在 **Windows** 提问且**未**提 LidarStudio 时，默认工作分支应是 `windows`（或从其拉出的 `feat/*`）。
+- 用户明确做 **LidarStudio 对接 / 适配**（或已在 `lidarstudio` 上）时，默认工作分支应是 `lidarstudio`（或从其拉出的 `feat/*`）。
+- 在 **Linux / Ubuntu / 开发板** 提问时，默认是 `main`（或从其拉出的 `feat/*`）。
+- 需要跨主线同步时，按上面方向经同步分支和 PR 合入（`main` ↔ `windows`，`windows` ↔ `lidarstudio`），不要建议改回「只保留 main、禁止长期平台/产品分支」。
+- 未完成工作可用短生命周期 `feat/<name>` 隔离，合回对应长期分支后删除功能分支。
+- **按 OS 分流**：Windows / lidarstudio → 原生 exe；Ubuntu/Linux → ROS2 脚本；开发板 → `remote_dev.sh`。不要把 Windows 会话拐进 WSL，也不要在真正的 Ubuntu 本机上改用 Windows exe。

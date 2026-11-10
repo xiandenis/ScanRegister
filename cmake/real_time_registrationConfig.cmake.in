@@ -1,0 +1,41 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(Threads)
+find_dependency(Eigen3 3.3 NO_MODULE)
+find_dependency(TBB)
+find_dependency(PCL COMPONENTS common registration io search features)
+find_dependency(PDAL)
+find_dependency(OpenCV COMPONENTS core imgproc imgcodecs)
+find_dependency(spdlog)
+
+# Recreate FLANN imported target if missing (Ubuntu has no CMake package).
+if(NOT TARGET flann::flann_cpp)
+  find_path(FLANN_INCLUDE_DIR NAMES flann/flann.hpp)
+  find_library(FLANN_CPP_LIBRARY NAMES flann_cpp flann_cpp_s)
+  if(FLANN_INCLUDE_DIR AND FLANN_CPP_LIBRARY)
+    add_library(flann::flann_cpp UNKNOWN IMPORTED)
+    set_target_properties(flann::flann_cpp PROPERTIES
+      IMPORTED_LOCATION "${FLANN_CPP_LIBRARY}"
+      INTERFACE_INCLUDE_DIRECTORIES "${FLANN_INCLUDE_DIR}"
+    )
+    find_library(LZ4_LIBRARY NAMES lz4)
+    if(LZ4_LIBRARY)
+      set_property(TARGET flann::flann_cpp APPEND PROPERTY
+        INTERFACE_LINK_LIBRARIES "${LZ4_LIBRARY}")
+    endif()
+  endif()
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/real_time_registrationTargets.cmake")
+
+# Non-namespaced aliases matching in-tree target names.
+if(TARGET real_time_registration::real_time_manager AND NOT TARGET real_time_manager)
+  add_library(real_time_manager ALIAS real_time_registration::real_time_manager)
+endif()
+if(TARGET real_time_registration::real_time_registration AND NOT TARGET real_time_registration::real_time_registration_alias_guard)
+  # Umbrella already exported as real_time_registration::real_time_registration
+endif()
+
+check_required_components(real_time_registration)

@@ -1,0 +1,35 @@
+---
+description: 修改 voxel_size_ 估计后必须板端复测三组回归数据
+globs: resolution_estimate/**/*.{hpp,cpp};registration_initializer/**/*.{hpp,cpp};docs/plan/深度曲率体素估计.md
+alwaysApply: false
+---
+
+# voxel_size_ 估计回归（三组数据）
+
+凡改动 **`frame.voxel_size_` / 分位数分辨率 / 曲率调制**（`PercentileResolutionEstimate`、`PercentileResolutionParams`、`_resolution` 及相关参数默认值），在开发板联调时**必须**用下列三组数据各跑一遍全量链式 `register_scan`，不要只测其中一组。
+
+| 角色 | 数据目录 | 建议工程目录 |
+|------|----------|--------------|
+| 室内 | `/home/Laser/ddx_work_spaces/test_las` | `.../project/test_las_voxel_<标签>` |
+| 短序列/车库 | `/home/Laser/ddx_work_spaces/trimble_cheku` | `.../project/trimble_cheku_voxel_<标签>` |
+| 室外稠密 | `/home/Laser/ddx_work_spaces/foshan_lingnan_las` | `.../project/foshan_lingnan_voxel_<标签>`（或用户指定工程名） |
+
+```bash
+./remote_dev.sh test-ros2 --data-dir /home/Laser/ddx_work_spaces/test_las \
+  --project-dir /home/Laser/ddx_work_spaces/project/test_las_voxel_<标签>
+./remote_dev.sh test-ros2 --data-dir /home/Laser/ddx_work_spaces/trimble_cheku \
+  --project-dir /home/Laser/ddx_work_spaces/project/trimble_cheku_voxel_<标签>
+./remote_dev.sh test-ros2 --data-dir /home/Laser/ddx_work_spaces/foshan_lingnan_las \
+  --project-dir /home/Laser/ddx_work_spaces/project/foshan_lingnan_voxel_<标签>
+```
+
+## 汇报要点（voxel + 效率，缺一不可）
+
+`voxel_size_` 直接影响粗配准 `feat_*` / FLANN，汇报**必须同时**给出：
+
+1. **体素组成**：每站 `percentile resolution` 的 `depth_v0` / `p_np`（或 `p_plane`）/ `factor` / `resolution`，及落盘 `info/*.info` 的 `voxel_size`。
+2. **配准效率**：`EFFICIENCY REPORT`（`init_s` / `reg_s` / load 等）+ 每边 `robust_matcher` 的 `flann` / `extract` / `feat_src`/`feat_tgt` / `inliers` / `valid`。
+3. 用 Canvas 一并展示三组的 voxel 与效率（可同一 canvas）；勿只报 voxel 数字。
+4. 同步更新 [`docs/plan/深度曲率体素估计.md`](../../docs/plan/深度曲率体素估计.md) 复测表（参数变更时）。
+
+权威条目：[`docs/dictionaries/配准初始化_Dictionary.md`](../../docs/dictionaries/配准初始化_Dictionary.md)「voxel_size_ 估计回归」。

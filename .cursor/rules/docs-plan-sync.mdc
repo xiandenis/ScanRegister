@@ -1,0 +1,94 @@
+---
+description: Cursor 计划变更须同步到 docs/plan 归档
+alwaysApply: true
+---
+
+# 计划归档同步（docs/plan）
+
+已导出到 [`docs/plan/`](docs/plan/) 的计划，后续若改范围、算法、API、工程接线或字典约定，**必须同步更新对应归档文件**，不要只改 Cursor plan / 代码 / 字典而不改 `docs/plan`。
+
+## 当前已归档对照
+
+| 主题 | 归档路径 |
+|------|----------|
+| 配准报告估计模块 | [`docs/plan/配准报告估计模块.md`](docs/plan/配准报告估计模块.md) |
+| 配准报告 RMS 密度不对称修复 | [`docs/plan/配准报告RMS密度不对称修复.md`](docs/plan/配准报告RMS密度不对称修复.md) |
+| 配准报告 RMS 内点阈值分离 | [`docs/plan/配准报告RMS内点阈值分离.md`](docs/plan/配准报告RMS内点阈值分离.md) |
+| 精配准报告耗时优化（2026-08-19） | [`docs/plan/精配准报告耗时优化_2026-08-19.md`](docs/plan/精配准报告耗时优化_2026-08-19.md) |
+| 粗配准 FasterPFH 提取微优化（2026-08-20） | [`docs/plan/粗配准FasterPFH提取微优化_2026-08-20.md`](docs/plan/粗配准FasterPFH提取微优化_2026-08-20.md) |
+| 粗配准 HNSW ef_construction=50（2026-08-20） | [`docs/plan/粗配准HNSW_ef_construction_2026-08-20.md`](docs/plan/粗配准HNSW_ef_construction_2026-08-20.md) |
+| 实时配准报告网页 | [`docs/plan/实时配准报告网页.md`](docs/plan/实时配准报告网页.md) |
+| 板端配准进度俯视图 | [`docs/plan/板端配准进度俯视图.md`](docs/plan/板端配准进度俯视图.md) |
+| 站扫定向 RPPL 接口 | [`docs/plan/站扫定向RPPL接口.md`](docs/plan/站扫定向RPPL接口.md) |
+| ICP 算法集合归入精配准 | [`docs/plan/ICP算法集合归入精配准.md`](docs/plan/ICP算法集合归入精配准.md) |
+| 粗配准 FLANN 加速分阶段 | [`docs/plan/粗配准FLANN加速分阶段.md`](docs/plan/粗配准FLANN加速分阶段.md) |
+| 粗配准 nanoflann 替换 FLANN | [`docs/plan/粗配准nanoflann替换FLANN.md`](docs/plan/粗配准nanoflann替换FLANN.md) |
+| 粗配准 hnswlib 替换 FLANN | [`docs/plan/粗配准hnswlib替换FLANN.md`](docs/plan/粗配准hnswlib替换FLANN.md) |
+| 深度曲率体素估计 | [`docs/plan/深度曲率体素估计.md`](docs/plan/深度曲率体素估计.md) |
+| 粗配准特征数空间分箱控制 | [`docs/plan/粗配准特征数空间分箱控制.md`](docs/plan/粗配准特征数空间分箱控制.md) |
+| 分模块峰值内存分析 | [`docs/plan/分模块峰值内存分析.md`](docs/plan/分模块峰值内存分析.md) |
+| 下一张摆放推荐图 | [`docs/plan/下一张摆放推荐图.md`](docs/plan/下一张摆放推荐图.md) |
+| 下一张摆放推荐图·方案B | [`docs/plan/下一张摆放推荐图_方案B_全景深度可见.md`](docs/plan/下一张摆放推荐图_方案B_全景深度可见.md) |
+| 下一张摆放推荐图·方案C | [`docs/plan/下一张摆放推荐图_方案C_完整点云法向可见.md`](docs/plan/下一张摆放推荐图_方案C_完整点云法向可见.md) |
+| 下一张摆放推荐图·方案D | [`docs/plan/下一张摆放推荐图_方案D_Mesh射线.md`](docs/plan/下一张摆放推荐图_方案D_Mesh射线.md) |
+| 下一张摆放推荐图·方案D实现计划 | [`docs/plan/下一张摆放推荐图_方案D_实现计划.md`](docs/plan/下一张摆放推荐图_方案D_实现计划.md) |
+| 站扫深度图三角化 | [`docs/plan/站扫深度图三角化.md`](docs/plan/站扫深度图三角化.md) |
+| RangeImageMesher TBB 并行 | [`docs/plan/站扫深度图三角化.md`](docs/plan/站扫深度图三角化.md)（见文内 TBB 链接；规格 [`docs/superpowers/specs/2026-08-11-range-image-mesher-tbb-design.md`](docs/superpowers/specs/2026-08-11-range-image-mesher-tbb-design.md)） |
+| Mesh可见性（mesh_visibility · IMeshVisibility） | [`docs/plan/下一张摆放推荐图_方案D_Mesh射线.md`](docs/plan/下一张摆放推荐图_方案D_Mesh射线.md)（规格 [`docs/superpowers/specs/2026-08-11-mesh-visibility-rename-design.md`](docs/superpowers/specs/2026-08-11-mesh-visibility-rename-design.md)） |
+| registerScan 跨子图并图 | [`docs/plan/registerScan跨子图并图.md`](docs/plan/registerScan跨子图并图.md)（规格 [`docs/superpowers/specs/2026-08-11-register-scan-subgraph-merge-design.md`](docs/superpowers/specs/2026-08-11-register-scan-subgraph-merge-design.md)） |
+| 全局位姿图优化 | [`docs/plan/全局位姿图优化.md`](docs/plan/全局位姿图优化.md)（规格 [`docs/superpowers/specs/2026-08-14-pose-graph-optimization-design.md`](docs/superpowers/specs/2026-08-14-pose-graph-optimization-design.md)） |
+| 哈希体素 Medoid 下采样 | [`docs/plan/哈希体素Medoid下采样.md`](docs/plan/哈希体素Medoid下采样.md)（规格 [`docs/superpowers/specs/2026-08-14-voxel-hash-medoid-design.md`](docs/superpowers/specs/2026-08-14-voxel-hash-medoid-design.md)） |
+| voxel_3 法向估计后端 | [`docs/plan/voxel3法向估计后端.md`](docs/plan/voxel3法向估计后端.md)（规格 [`docs/superpowers/specs/2026-08-14-voxel3-normal-backend-design.md`](docs/superpowers/specs/2026-08-14-voxel3-normal-backend-design.md)） |
+| 开发工具分类与针孔帧模拟器 | [`docs/plan/开发工具分类与针孔帧模拟器.md`](docs/plan/开发工具分类与针孔帧模拟器.md)（规格 [`docs/superpowers/specs/2026-08-17-development-tools-design.md`](docs/superpowers/specs/2026-08-17-development-tools-design.md)） |
+| 全景覆盖采样规划器 | [`docs/plan/全景覆盖采样规划器.md`](docs/plan/全景覆盖采样规划器.md)（规格 [`docs/superpowers/specs/2026-08-17-panorama-pose-planner-design.md`](docs/superpowers/specs/2026-08-17-panorama-pose-planner-design.md)） |
+| 针孔相机选型仿真 | [`docs/plan/针孔相机选型仿真.md`](docs/plan/针孔相机选型仿真.md)（规格 [`docs/superpowers/specs/2026-08-17-pinhole-camera-lab-design.md`](docs/superpowers/specs/2026-08-17-pinhole-camera-lab-design.md)） |
+| 点云全景图生成 | [`docs/plan/点云全景图生成.md`](docs/plan/点云全景图生成.md)（规格 [`docs/superpowers/specs/2026-08-17-point-cloud-panorama-design.md`](docs/superpowers/specs/2026-08-17-point-cloud-panorama-design.md)） |
+| 增量全景直播联调台 | [`docs/plan/增量全景直播联调台.md`](docs/plan/增量全景直播联调台.md)（规格 [`docs/superpowers/specs/2026-08-17-mosaic-live-lab-design.md`](docs/superpowers/specs/2026-08-17-mosaic-live-lab-design.md)） |
+| RealOneCloud | [`docs/plan/RealOneCloud.md`](docs/plan/RealOneCloud.md) |
+| 码盘角全景栅格流式下采样 | [`docs/plan/码盘角全景栅格流式下采样.md`](docs/plan/码盘角全景栅格流式下采样.md)（规格 [`docs/superpowers/specs/2026-08-21-encoder-angular-downsampler-design.md`](docs/superpowers/specs/2026-08-21-encoder-angular-downsampler-design.md)） |
+
+| 扫面预览计算端（码盘路径 C） | [`docs/plan/扫面预览计算端_码盘路径C.md`](docs/plan/扫面预览计算端_码盘路径C.md)（规格 [`docs/superpowers/specs/2026-08-21-scan-preview-encoder-path-c-design.md`](docs/superpowers/specs/2026-08-21-scan-preview-encoder-path-c-design.md)） |
+| 扫描模拟器（LAS→E57→码盘列流） | [`docs/plan/扫描模拟器.md`](docs/plan/扫描模拟器.md)（规格 [`docs/superpowers/specs/2026-08-21-scan-simulator-design.md`](docs/superpowers/specs/2026-08-21-scan-simulator-design.md)） |
+| Device Backend HMI（对接 realonescaner） | [`docs/plan/Device_Backend_HMI.md`](docs/plan/Device_Backend_HMI.md)（规格 [`docs/superpowers/specs/2026-08-21-device-backend-hmi-design.md`](docs/superpowers/specs/2026-08-21-device-backend-hmi-design.md)） |
+
+| real_one_dev_tools 仓库拆分 | [`docs/plan/real_one_dev_tools仓库拆分.md`](docs/plan/real_one_dev_tools仓库拆分.md)（规格 [`docs/superpowers/specs/2026-08-21-real-one-dev-tools-split-design.md`](docs/superpowers/specs/2026-08-21-real-one-dev-tools-split-design.md)） |
+| E57ScanGeometry（码盘/E57/XYZ/像素） | [`docs/plan/E57ScanGeometry.md`](docs/plan/E57ScanGeometry.md)（规格 [`docs/superpowers/specs/2026-08-25-e57-scan-geometry-design.md`](docs/superpowers/specs/2026-08-25-e57-scan-geometry-design.md)） |
+| RealTimeRegistrationSession | [`docs/plan/RealTimeRegistrationSession.md`](docs/plan/RealTimeRegistrationSession.md)（规格 [`docs/superpowers/specs/2026-08-25-realtime-registration-session-design.md`](docs/superpowers/specs/2026-08-25-realtime-registration-session-design.md)） |
+| 工程根路径重定位 | [`docs/plan/工程根路径重定位.md`](docs/plan/工程根路径重定位.md)（规格 [`docs/superpowers/specs/2026-09-07-project-folder-repath-design.md`](docs/superpowers/specs/2026-09-07-project-folder-repath-design.md)） |
+| auto_registration 会话编排 | [`docs/plan/auto_registration.md`](docs/plan/auto_registration.md)（规格 [`docs/superpowers/specs/2026-10-15-auto-registration-session-pipeline-design.md`](docs/superpowers/specs/2026-10-15-auto-registration-session-pipeline-design.md)） |
+| auto_registration 全局位姿优化 | [`docs/plan/auto_registration.md`](docs/plan/auto_registration.md)（规格 [`docs/superpowers/specs/2026-10-15-auto-registration-global-pose-optimize-design.md`](docs/superpowers/specs/2026-10-15-auto-registration-global-pose-optimize-design.md)） |
+| auto_registration 边缓存双槽 | [`docs/plan/auto_registration.md`](docs/plan/auto_registration.md)（规格 [`docs/superpowers/specs/2026-10-15-auto-registration-session-edge-cache-design.md`](docs/superpowers/specs/2026-10-15-auto-registration-session-edge-cache-design.md)） |
+| StationInitialize 测站初始化操作群 | [`docs/plan/StationInitialize.md`](docs/plan/StationInitialize.md)（规格 [`docs/superpowers/specs/2026-11-04-station-initialize-design.md`](docs/superpowers/specs/2026-11-04-station-initialize-design.md)） |
+| ScanInitManager 源缓存与自然排序 | [`docs/plan/ScanInitManager.md`](docs/plan/ScanInitManager.md)（规格 [`docs/superpowers/specs/2026-11-05-scan-init-manager-design.md`](docs/superpowers/specs/2026-11-05-scan-init-manager-design.md)；**未实施**，批准前不改现网入口） |
+| 会话工程与缓存 | [`docs/plan/会话工程与缓存.md`](docs/plan/会话工程与缓存.md)（规格 [`docs/superpowers/specs/2026-11-05-session-workspace-cache-design.md`](docs/superpowers/specs/2026-11-05-session-workspace-cache-design.md)；**已实施**） |
+| 内存感知智能调度（MemAwareScheduler） | [`docs/plan/内存感知智能调度.md`](docs/plan/内存感知智能调度.md)（规格 [`docs/superpowers/specs/2026-10-15-mem-aware-scheduler-design.md`](docs/superpowers/specs/2026-10-15-mem-aware-scheduler-design.md)） |
+| trim_icp 迁入 | [`docs/plan/trim_icp迁入.md`](docs/plan/trim_icp迁入.md)（规格 [`docs/superpowers/specs/2026-10-19-south-icp-port-design.md`](docs/superpowers/specs/2026-10-19-south-icp-port-design.md)；原目录名 `south_icp` 已去品牌化为 `trim_icp`） |
+| trim_icp 两层重叠裁剪 | [`docs/plan/trim_icp两层重叠裁剪.md`](docs/plan/trim_icp两层重叠裁剪.md)（规格 [`docs/superpowers/specs/2026-10-19-south-icp-two-layer-overlap-design.md`](docs/superpowers/specs/2026-10-19-south-icp-two-layer-overlap-design.md)；计划 [`docs/superpowers/plans/2026-10-19-south-icp-two-layer-overlap.md`](docs/superpowers/plans/2026-10-19-south-icp-two-layer-overlap.md)） |
+| 精配准 TrimICP 后端对照 | [`docs/plan/精配准TrimICP后端对照.md`](docs/plan/精配准TrimICP后端对照.md)（规格 [`docs/superpowers/specs/2026-10-19-fine-trim-icp-backend-compare-design.md`](docs/superpowers/specs/2026-10-19-fine-trim-icp-backend-compare-design.md)） |
+| basic_icp 法向一致性 Method（自建环原型） | [`docs/plan/basic_icp法向一致性Method.md`](docs/plan/basic_icp法向一致性Method.md)（规格 [`docs/superpowers/specs/2026-10-19-basic-icp-normal-consistent-methods-design.md`](docs/superpowers/specs/2026-10-19-basic-icp-normal-consistent-methods-design.md)） |
+| basic_icp 法向一致性 FRICP 注入终态 | [`docs/plan/basic_icp法向一致性_FRICP注入终态.md`](docs/plan/basic_icp法向一致性_FRICP注入终态.md)（计划 [`docs/superpowers/plans/2026-10-19-fricp-normal-mask-injection.md`](docs/superpowers/plans/2026-10-19-fricp-normal-mask-injection.md)；理论 [`docs/superpowers/specs/2026-10-19-fricp-normal-mask-injection-theory.md`](docs/superpowers/specs/2026-10-19-fricp-normal-mask-injection-theory.md)） |
+| basic_icp 法向一致性正交开关（全 Method） | [`docs/plan/basic_icp法向一致性正交开关.md`](docs/plan/basic_icp法向一致性正交开关.md)（规格 [`docs/superpowers/specs/2026-10-19-basic-icp-normal-consistency-orthogonal-design.md`](docs/superpowers/specs/2026-10-19-basic-icp-normal-consistency-orthogonal-design.md)；计划 [`docs/superpowers/plans/2026-10-19-basic-icp-normal-consistency-orthogonal.md`](docs/superpowers/plans/2026-10-19-basic-icp-normal-consistency-orthogonal.md)） |
+| basic_icp 回退 SLAM + trim 体素后法向预筛 | [`docs/plan/basic_icp回退SLAM与trim法向预筛.md`](docs/plan/basic_icp回退SLAM与trim法向预筛.md)（规格 [`docs/superpowers/specs/2026-10-20-basic-icp-slam-rollback-trim-nc-prefilter-design.md`](docs/superpowers/specs/2026-10-20-basic-icp-slam-rollback-trim-nc-prefilter-design.md)；计划 [`docs/superpowers/plans/2026-10-20-basic-icp-slam-rollback-trim-nc-prefilter.md`](docs/superpowers/plans/2026-10-20-basic-icp-slam-rollback-trim-nc-prefilter.md)） |
+| GlobalEdgeOptimize（边优化操作群） | [`docs/plan/GlobalEdgeOptimize.md`](docs/plan/GlobalEdgeOptimize.md)（规格 [`docs/superpowers/specs/2026-10-20-global-edge-optimize-design.md`](docs/superpowers/specs/2026-10-20-global-edge-optimize-design.md)；计划 [`docs/superpowers/plans/2026-10-20-global-edge-optimize.md`](docs/superpowers/plans/2026-10-20-global-edge-optimize.md)） |
+| GlobalLoopClosure（补环 / 回环操作群） | [`docs/plan/GlobalLoopClosure.md`](docs/plan/GlobalLoopClosure.md)（规格 [`docs/superpowers/specs/2026-10-20-global-loop-closure-design.md`](docs/superpowers/specs/2026-10-20-global-loop-closure-design.md)；**L2/L3 假回环 robust 剪边另开专项**） |
+| GenZ-ICP 迁入 | [`docs/plan/GenZ-ICP迁入.md`](docs/plan/GenZ-ICP迁入.md)（规格 [`docs/superpowers/specs/2026-10-22-genz-icp-port-design.md`](docs/superpowers/specs/2026-10-22-genz-icp-port-design.md)；计划 [`docs/superpowers/plans/2026-10-22-genz-icp-port.md`](docs/superpowers/plans/2026-10-22-genz-icp-port.md)） |
+| GEO/GLC GenZ vs Trim 对照 | [`docs/plan/GEO_GLC_GenZ与Trim对照.md`](docs/plan/GEO_GLC_GenZ与Trim对照.md)（规格 [`docs/superpowers/specs/2026-10-22-geo-glc-genz-vs-trim-compare-design.md`](docs/superpowers/specs/2026-10-22-geo-glc-genz-vs-trim-compare-design.md)） |
+| SpaceInspection 观测–观测冲突（**已放弃**） | [`docs/plan/SpaceInspection观测冲突.md`](docs/plan/SpaceInspection观测冲突.md)（规格 [`docs/superpowers/specs/2026-10-22-space-inspection-obs-conflict-design.md`](docs/superpowers/specs/2026-10-22-space-inspection-obs-conflict-design.md)；字典否决条） |
+| 会话算法配置 Options（阶段 A） | [`docs/plan/会话算法配置Options.md`](docs/plan/会话算法配置Options.md)（计划 [`docs/superpowers/plans/2026-10-23-session-options-a.md`](docs/superpowers/plans/2026-10-23-session-options-a.md)；B=配置文件另开） |
+| 多站点云融合 cloud_fusion | [`docs/plan/多站点云融合cloud_fusion.md`](docs/plan/多站点云融合cloud_fusion.md)（规格 [`docs/superpowers/specs/2026-10-26-cloud-fusion-design.md`](docs/superpowers/specs/2026-10-26-cloud-fusion-design.md)；spec-workflow `.spec-workflow/specs/cloud-fusion/`） |
+| 点云局部统计去噪 cloud_denoise | [`docs/plan/点云局部统计去噪.md`](docs/plan/点云局部统计去噪.md)（规格 [`docs/superpowers/specs/2026-10-26-cloud-denoise-local-sor-design.md`](docs/superpowers/specs/2026-10-26-cloud-denoise-local-sor-design.md)） |
+| 点云采样 cloud_sample | [`docs/plan/点云采样cloud_sample.md`](docs/plan/点云采样cloud_sample.md)（规格 [`docs/superpowers/specs/2026-10-26-cloud-sample-design.md`](docs/superpowers/specs/2026-10-26-cloud-sample-design.md)；计划 [`docs/superpowers/plans/2026-10-26-cloud-sample.md`](docs/superpowers/plans/2026-10-26-cloud-sample.md)） |
+| 点云采样 OOC / 分块 | [`docs/plan/点云采样OOC.md`](docs/plan/点云采样OOC.md)（规格 [`docs/superpowers/specs/2026-10-26-cloud-sample-ooc-design.md`](docs/superpowers/specs/2026-10-26-cloud-sample-ooc-design.md)） |
+| 点云空间分块 cloud_chunk | [`docs/plan/点云空间分块cloud_chunk.md`](docs/plan/点云空间分块cloud_chunk.md)（规格 [`docs/superpowers/specs/2026-10-26-cloud-chunk-design.md`](docs/superpowers/specs/2026-10-26-cloud-chunk-design.md)；计划 [`docs/superpowers/plans/2026-10-26-cloud-chunk.md`](docs/superpowers/plans/2026-10-26-cloud-chunk.md)） |
+| 局部工作坐标系 WorkingFrame | [`docs/plan/局部工作坐标系.md`](docs/plan/局部工作坐标系.md)（规格 [`docs/superpowers/specs/2026-10-26-working-frame-design.md`](docs/superpowers/specs/2026-10-26-working-frame-design.md)） |
+| 算法验证门禁 | [`docs/plan/算法验证门禁.md`](docs/plan/算法验证门禁.md)（规格 [`docs/superpowers/specs/2026-10-26-algo-verification-gates-design.md`](docs/superpowers/specs/2026-10-26-algo-verification-gates-design.md)） |
+| 点云上采样 cloud_upsample（**格点已实施**；整平面铺格记下不做） | [`docs/plan/点云上采样.md`](docs/plan/点云上采样.md)（切平面格点已落地；整平面拟合后再铺格仅记录、不实现） |
+| 全景深度图估计器 | [`docs/plan/全景深度图估计器.md`](docs/plan/全景深度图估计器.md)（`DepthMapEstimator`：Root 本体系 `CV_32FC1` PFM 缓存；`SpaceInspection` 投影点云用完即释放） |
+
+（新增导出时在本表补一行。）
+
+## 同步要求
+
+1. 改计划内容 → 立刻改 `docs/plan/<同名>.md`（去掉 Cursor YAML frontmatter；仓库内链接用相对路径）。
+2. 实施中发现计划过时并调整方案 → 同步改归档，必要时在文首注明状态（如「已实施」「部分修订」）。
+3. **不要**编辑用户本机 `.cursor/plans/*.plan.md` 作为唯一真源；以仓库 `docs/plan/` 为准做团队可读归档。

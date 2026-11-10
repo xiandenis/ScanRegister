@@ -1,0 +1,18 @@
+{
+  "name": "real-time-registration",
+  "version": "2.0.2",
+  "description": "Semi-realtime point cloud registration library",
+  "dependencies": [
+    "eigen3",
+    "tbb",
+    "pcl",
+    "pdal",
+    "opencv4",
+    "spdlog",
+    "flann",
+    "rapidjson",
+    "lz4",
+    "ceres",
+    "libe57format"
+  ]
+}

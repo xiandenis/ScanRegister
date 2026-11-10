@@ -1,0 +1,34 @@
+---
+description: 点云与法向均已缓存且同时使用时，下采样走索引并同步抽取法向，默认不重估
+alwaysApply: true
+---
+
+# 缓存点云与法向的索引下采样
+
+同一帧的**点云**与**表面法向**都已缓存，且下游要同时消费二者时，下采样默认走**索引下采样**（index-based downsampling）：先得到原点云上的索引，再用同一组索引同步抽取点与法向。下采样点仍是原点的子集，法向一一对应，**不再对下采样点云做法向估计**。
+
+## 默认做法
+
+1. 用返回 `std::vector<int>` 索引的接口，在原点云上取子集：
+   - 体素真 Medoid：`octree::downsampleMedoidIndices`（生产默认）
+   - 体素首点：`octree::downsampleFirstIndices`（求解前抽稀）
+   - 角度栅格赢家：`AngleDownsample::downsampling`
+2. 同一组 `indices` 分别抽取，并保持等长、同序：
+
+```cpp
+pcl::copyPointCloud(*cloud_in, indices, *cloud_out);
+pcl::copyPointCloud(*normals_in, indices, *normals_out);
+```
+
+3. 抽取前确认 `normals->size() == cloud->size()`。参考 `FPFHEstimator` 的叶尺寸抽稀，以及 `RegistrationInitializer` 用 `ds_indices` 同时写出点云与法向。
+
+下采样结果必须保留**原始点坐标**（Medoid / 首点 / 栅格赢家都是原点子集）。质心体素（`VoxelGrid` 等会合成新点）破坏索引对应，本场景不用。
+
+## 何时才重估法向
+
+仅在下面情况对下采样结果重新做法向估计：
+
+- 任务或规格**明确要求**在新几何上重估（支撑半径变了、输出点已不是原点子集）。
+- 缓存法向缺失、为空，或与原点云**不等长**，无法按索引对齐。
+
+没有上述理由时，不要在索引抽取之后再调 `_calculateNormal` / `NormalEstimation`。

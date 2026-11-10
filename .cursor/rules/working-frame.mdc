@@ -1,0 +1,19 @@
+---
+description: 点云处理默认统一局部工作系（始终减偏移，不区分大小坐标）
+alwaysApply: true
+---
+
+# 局部工作坐标系（WorkingFrame）
+
+权威设计：[`docs/superpowers/specs/2026-10-26-working-frame-design.md`](docs/superpowers/specs/2026-10-26-working-frame-design.md)。  
+工具：[`common/working_frame.hpp`](common/working_frame.hpp)（`Ddx::WorkingFrame`）。
+
+## 约定
+
+1. **一次处理共用一个原点 `O`**（一个 `WorkingFrame`）：多文件输入也共用，**禁止**每文件各自一套偏移。
+2. **默认始终** `p' = p - O` 再进热路径，**不区分**大/小坐标系、不必先识别 CRS 量级。
+3. 热路径点缓冲 XYZ 优先 **float**（在局部系）；**位姿 / 图优化 / 溯源下标**仍用 double / u64。
+4. 写回：`p' + O`，或 LAS **header offset = 同一个 `O`**（同一次处理产出的块文件共用该 offset）。
+5. `O` 在会话内固定。`cloud_chunk` 默认取首文件首点（可选 \(T_0\cdot p_0\)），禁止无中生有；新算法模块默认遵守。
+
+反例：每个输入 LAS 各减各的 header offset 当「工作系」；或只对「看起来很大的坐标」才减偏移。

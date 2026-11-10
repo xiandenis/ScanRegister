@@ -1,0 +1,110 @@
+---
+description: ROS2 口语快捷：本机/开发板 编译、测试数据、Canvas 汇报、报告网页
+alwaysApply: true
+---
+
+# ROS 2 编译与数据测试约定
+
+字典权威条目：[`docs/dictionaries/ROS2实时配准_Dictionary.md`](docs/dictionaries/ROS2实时配准_Dictionary.md)（口语快捷约定表）。
+
+> **平台前提**（与 [`dual-platform-git.mdc`](dual-platform-git.mdc) 一致）：
+> - **Ubuntu / Linux 本机**：**可以且应当走 ROS2**（本节全部脚本）。「测试数据 / 测试实时配准」→ `./ros2/test_ros2.sh`。
+> - **Windows 本机**：不走本节；「测试数据」→ `real_time_manager_test.exe`；勿用 WSL 顶替 Ubuntu。
+> - **开发板**（用户明确提）：`remote_dev.sh`（见下文）。
+
+## 本机（Ubuntu / Linux · 走 ROS2）
+
+当用户说「编译 ros2」「编译 ros2_ws」或等价含义（且**未**提开发板、且当前为 Ubuntu/Linux）时：
+
+```bash
+./ros2/build_ros2.sh
+```
+
+**默认 Release（`-O3 -DNDEBUG`）**。仅当用户明确说 Debug / 调试 时用：
+
+```bash
+./ros2/build_ros2.sh --debug
+```
+
+产物：仓库根 `ros2_ws/`。
+
+当用户说「测试数据」并提供 **数据路径文件夹** + **工程文件夹**（且未提开发板）：
+
+```bash
+./ros2/test_ros2.sh --data-dir <数据路径文件夹> --project-dir <工程文件夹>
+```
+
+**默认不开网页**。仅当用户同时要求「开报告网页 / 实时网页 / 同时开网页」时加 `--dashboard`（测前挂网页 → 打印 URL → 再跑链式配准；测完不杀网页）。
+
+默认测试数据文件夹下全部 `.las/.slas/.pcd/.ply`（不递归、按名排序、链式 `register_scan`）。先编译加 `--build`；节点已在跑用 `--no-launch`（此时需 `--node-log` 才能出效率表）。
+
+**节点生命周期**：测试结束后必须立刻关闭 `real_time_registration_node`（脚本已自动清理；手工联调结束也要停掉），避免残留节点干扰下次服务调用。站名默认用文件名去后缀（`--name-mode stem`）。报告网页与节点生命周期分离：`--dashboard` 测完保留网页。
+
+**效率汇报（强制）**：本机 `test_ros2.sh` 结束后也会自动打印 **EFFICIENCY REPORT**。向用户汇报时必须用 **配准报告与效率 Canvas**（见下方），不要只回 SUMMARY，也不要只贴 Markdown 大表。若开了 `--dashboard`，测前把网页 URL 发给用户。
+
+## 开发板
+
+默认 SSH：`Laser@192.168.110.88`，远端仓库 `/home/Laser/ddx_work_spaces/real_time_registration`，产物 `ros_ws_ssh/`。工程目录建议：`/home/Laser/ddx_work_spaces/project/<工程名>`。
+
+当用户说「开发板编译 ros2」「开发板编译」或等价含义时：
+
+```bash
+./remote_dev.sh build-ros2
+```
+
+默认同样 **Release（-O3）**；Debug 用 `./remote_dev.sh build-ros2 --debug`。
+
+当用户说「开发板测试数据」「在开发板进行测试」并提供 **数据路径文件夹** + **工程文件夹** 时：
+
+```bash
+./remote_dev.sh test-ros2 --data-dir <数据路径文件夹> --project-dir <工程文件夹>
+```
+
+同样默认测数据文件夹下全部支持点云。需要先编译时加 `--build`。
+
+**开发板实时网页（可选，默认关）**：仅当用户同时要求「开报告网页 / 实时网页 / 同时开网页」时加 `--dashboard`：
+
+```bash
+./remote_dev.sh test-ros2 --dashboard --data-dir <数据> --project-dir <工程>
+```
+
+板端监听 `0.0.0.0:8765`，浏览器打开 `http://192.168.110.88:8765/`（或当前 `REMOTE_HOST`）；测完保留网页。未提网页则**不要**加 `--dashboard`。
+
+勿手写冗长 colcon / 多段 `ros2 service call`，除非用户明确要求逐步 CLI。
+
+本机 `test_ros2.sh` / 开发板 `test-ros2` 结束后都必须用 **配准报告与效率 Canvas** 汇报（数据来自 `align_result.txt` + EFFICIENCY REPORT），不要只回 SUMMARY。
+
+## 配准报告与效率 Canvas（强制 · Agent 聊天汇报）
+
+字典权威步骤：[`docs/dictionaries/ROS2实时配准_Dictionary.md`](docs/dictionaries/ROS2实时配准_Dictionary.md)「配准报告与效率 Canvas」。参考实现：`canvases/registration-report-efficiency.canvas.tsx`（Cursor 工程 canvases 目录）。
+
+当用户说「配准报告」「配准报告和效率」「效率」，或本机/开发板**数据测试刚结束**需要汇报时：
+
+1. 读工程目录 `align_result.txt`（边：similarity / RMS / weight / feature_num）。
+2. 取最近一次 `EFFICIENCY REPORT`；必要时：
+   ```bash
+   python3 ros2/report_ros2_efficiency.py --node-log <node.log> --project-dir <工程文件夹>
+   ```
+3. 按 Cursor Canvas skill 写/更新 workspace `canvases/*.canvas.tsx`（仅 `import` 自 `cursor/canvas`，数据内联）。
+4. 建议版面：`Stat` 摘要 → 配准边 `Table` → 分站耗时 `BarChart` → 瓶颈 `UsageBar` + 点数/init 明细表。
+5. 回复中附 Canvas 的 markdown 绝对路径链接 + 一两句结论；勿用大段 Markdown 表替代 Canvas。
+
+## 配准报告网页仪表盘（给人实时盯测）
+
+字典 / 计划：[`docs/dictionaries/ROS2实时配准_Dictionary.md`](docs/dictionaries/ROS2实时配准_Dictionary.md)「配准报告网页仪表盘」、[`docs/plan/实时配准报告网页.md`](docs/plan/实时配准报告网页.md)。
+
+**本机与开发板均默认关**；仅用户明确要求时加 `--dashboard`：
+
+```bash
+./ros2/test_ros2.sh --dashboard --data-dir <数据> --project-dir <工程>
+./remote_dev.sh test-ros2 --dashboard --data-dir <数据> --project-dir <工程>
+# 板端浏览器：http://<REMOTE_HOST>:8765/
+```
+
+单独开网页：
+
+```bash
+./ros2/report_dashboard.sh --project-dir <工程文件夹> [--node-log <node.log>] [--port 8765]
+```
+
+Canvas 仍是 Agent 汇报形态，网页不替代 Canvas。
