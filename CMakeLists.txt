@@ -54,6 +54,9 @@ add_subdirectory(file_system)
 add_subdirectory(common)
 add_subdirectory(graph)
 add_subdirectory(point_cloud_io)
+add_subdirectory(fastreg_filter)
+add_subdirectory(global_matrix_file)
+add_subdirectory(depth_map_tool)
 
 # Robust coarse-matching stack (STATIC / header INTERFACE leaves under robust_rough/).
 add_subdirectory(robust_rough)

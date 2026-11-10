@@ -23,6 +23,9 @@
 |--------|----------|--------------------------------------|------------------------|------------|
 | robust_global_reg | common / logging / file_system | Common / LogManager | 仓库内 | 粗配准内存入口 |
 | point_cloud_io | logging | LogManager | 仓库内 | 公共点云 IO（见点云 IO 字典） |
+| fastreg_filter | logging | LogManager | 仓库内 | 深度差分 verbose 日志（见 FastReg 滤波字典） |
+| global_matrix_file | common / logging | Common 串编解码 / LogManager | 仓库内 | 全局位姿 JSON（见全局位姿文件字典） |
+| depth_map_tool | common | 【全景坐标工具】(PanoramaUtil) | 仓库内 | 点云投影全景深度（见深度图工具字典） |
 | scan_register（伞目标） | graph | 【最小生成树】/【连通分量】/【最短路径】 | 仓库内 | 基础图算法随伞目标导出 |
 | （待上层业务） | common / logging / file_system / graph | — | 仓库内 | 业务模块迁入后回填 |
 

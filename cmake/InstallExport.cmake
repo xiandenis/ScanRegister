@@ -6,6 +6,7 @@
 #   lidarstudio     — LidarStudio 产品白名单根目标链接闭包（模块落地后填写）。
 #
 # 已落地：common / file_system / logging / graph / point_cloud_io /
+#         fastreg_filter / global_matrix_file / depth_map_tool /
 #         robust_rough/* / robust_refine/* / robust_global_reg。
 
 include(GNUInstallDirs)
@@ -39,6 +40,9 @@ set(_SR_LIB_TARGETS_FULL
   small_gicp
   genz_icp
   point_cloud_io
+  fastreg_filter
+  global_matrix_file
+  depth_map_tool
   robust_global_reg
 )
 
@@ -55,6 +59,9 @@ set(_SR_HEADER_MODULES_FULL
   small_gicp
   genz_icp
   point_cloud_io
+  fastreg_filter
+  global_matrix_file
+  depth_map_tool
   robust_global_reg
 )
 

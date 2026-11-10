@@ -12,5 +12,8 @@
 | [`鲁棒粗匹配_Dictionary.md`](鲁棒粗匹配_Dictionary.md) | `robust_rough/` 下 `robust_matcher`、`robin`、`pmc`、`teaser`、`matcher_*`、`xenium` |
 | [`鲁棒精配_Dictionary.md`](鲁棒精配_Dictionary.md) | `robust_refine/` 下 `basic_icp`、`fast_gicp`、`small_gicp`、`genz_icp` |
 | [`粗全局配准_Dictionary.md`](粗全局配准_Dictionary.md) | `robust_global_reg`（IO 见点云 IO） |
+| [`FastReg滤波_Dictionary.md`](FastReg滤波_Dictionary.md) | `fastreg_filter`（深度图差分滤波） |
+| [`全局位姿文件_Dictionary.md`](全局位姿文件_Dictionary.md) | `global_matrix_file`（多站全局位姿 JSON） |
+| [`深度图工具_Dictionary.md`](深度图工具_Dictionary.md) | `depth_map_tool`（全景深度生成与格式转换） |
 
 Hub 总览：[`../点云算法总览_Dictionary.md`](../点云算法总览_Dictionary.md)。

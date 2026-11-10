@@ -20,6 +20,9 @@
 | [`file_system/`](file_system/) | 可移植文件系统与通配（SHARED） |
 | [`logging/`](logging/) | 进程内统一日志（SHARED，spdlog） |
 | [`graph/`](graph/) | 通用图算法 MST / 连通分量 / Dijkstra（INTERFACE，纯 std） |
+| [`fastreg_filter/`](fastreg_filter/) | FastReg 深度图差分滤波（**STATIC**：全景 / 空间透视） |
+| [`global_matrix_file/`](global_matrix_file/) | 多站全局位姿 JSON 读写（**STATIC**） |
+| [`depth_map_tool/`](depth_map_tool/) | 全景深度图生成与格式转换（**STATIC**） |
 | [`robust_rough/`](robust_rough/) | 鲁棒粗匹配：`robust_matcher` / `teaser` / `robin` / `pmc` 等（**STATIC** / INTERFACE） |
 | [`robust_refine/`](robust_refine/) | 鲁棒精配：`basic_icp` / `small_gicp` / `genz_icp` / `fast_gicp`（**STATIC** / INTERFACE） |
 | [`point_cloud_io/`](point_cloud_io/) | 点云多格式 I/O（SHARED；由调用方/测试链接） |
