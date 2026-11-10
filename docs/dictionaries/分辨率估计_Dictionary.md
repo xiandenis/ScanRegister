@@ -12,6 +12,7 @@
 | 调用方 | 被调用方 | 关键衔接点（标准中文命名 / 代码名） | 依赖类型 (仓库内/外部) | 一句话说明 |
 |--------|----------|--------------------------------------|------------------------|------------|
 | resolution_estimate | logging | LOG_INFO | 仓库内 | 直方图 / 分位数结果日志 |
+| resolution_estimate | registration_type | 【体素场景类】(VoxelSceneClass) | 仓库内 | 曲率调制场景提示（权威在配准类型） |
 | resolution_estimate | PCL / Eigen3 | PointCloud / Vector3f | 外部 | 点云与径向深度 |
 | resolution_estimate_test | point_cloud_io | 【FramedCloud】(load) | 仓库内 | 读盘局部化后折回站心再估 |
 
@@ -25,7 +26,7 @@
 
 ## 模块：resolution_estimate
 
-依赖摘要：`logging`、`pcl_common`、`Eigen3`、OpenMP（可选）。
+依赖摘要：`logging`、`registration_type`、`pcl_common`、`Eigen3`、OpenMP（可选）。
 
 ### 文件级算法条目
 
@@ -49,6 +50,6 @@
 |------|--------------|-------------------|---------------------------|------------|
 | 5 | 分位数分辨率参数 | PercentileResolutionParams | 公共 | 权重、截断、量化、曲率调制开关 |
 | 6 | 分位数分辨率结果 | PercentileResolutionResult | 公共 | r50/r75/r90、体素与场景类 |
-| 7 | 体素场景类 | VoxelSceneClass | 公共 | Unknown / IndoorShrink / OutdoorExcess / Neutral |
+| 7 | 体素场景类（复用） | VoxelSceneClass | 忽略 | 定义在 registration_type；本模块只读写结果字段 |
 | 8 | 室内分曲率调制 | kIndoorScore | 公共 | 平面占比 + log-κ 标准差有界缩放 |
 | 9 | 非平面超额曲率调制 | kNonplanarExcess | 公共 | 超额放大 / 高平面缩小 / 中间带不动 |

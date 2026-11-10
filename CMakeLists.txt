@@ -53,6 +53,7 @@ add_subdirectory(logging)
 add_subdirectory(file_system)
 add_subdirectory(common)
 add_subdirectory(graph)
+add_subdirectory(registration_type)
 add_subdirectory(point_cloud_io)
 add_subdirectory(fastreg_filter)
 add_subdirectory(global_matrix_file)
@@ -79,6 +80,7 @@ target_link_libraries(scan_register INTERFACE
   file_system
   logging
   graph
+  registration_type
 )
 
 if(SCAN_REGISTER_INSTALL AND SCAN_REGISTER_IS_TOP_LEVEL)

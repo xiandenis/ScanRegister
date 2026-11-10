@@ -1,5 +1,7 @@
 #pragma once
 
+#include <registration_type/registration_type.hpp>
+
 #include <Eigen/Dense>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -9,18 +11,6 @@
 
 namespace Ddx
 {
-	/** 体素估计曲率调制场景提示（仅记录，不参与配准分流）。 */
-	enum class VoxelSceneClass
-	{
-		Unknown = 0,   // 未走曲率调制
-		IndoorShrink,  // v2：高平面 → 室内缩小
-		OutdoorExcess, // v2：非平面超额 → 放大
-		Neutral,       // v2：中间带，factor=1
-	};
-
-	char const* voxelSceneClassToString(VoxelSceneClass c);
-	VoxelSceneClass voxelSceneClassFromString(std::string const& s);
-
 	/** 曲率调制策略；默认 kIndoorScore 保持旧行为。 */
 	enum class CurvatureModulateMode
 	{

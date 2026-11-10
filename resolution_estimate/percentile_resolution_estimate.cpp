@@ -9,32 +9,6 @@
 
 namespace Ddx
 {
-	char const* voxelSceneClassToString(VoxelSceneClass c)
-	{
-		switch (c) {
-		case VoxelSceneClass::IndoorShrink:
-			return "indoor_shrink";
-		case VoxelSceneClass::OutdoorExcess:
-			return "outdoor_excess";
-		case VoxelSceneClass::Neutral:
-			return "neutral";
-		case VoxelSceneClass::Unknown:
-		default:
-			return "unknown";
-		}
-	}
-
-	VoxelSceneClass voxelSceneClassFromString(std::string const& s)
-	{
-		if (s == "indoor_shrink")
-			return VoxelSceneClass::IndoorShrink;
-		if (s == "outdoor_excess")
-			return VoxelSceneClass::OutdoorExcess;
-		if (s == "neutral")
-			return VoxelSceneClass::Neutral;
-		return VoxelSceneClass::Unknown;
-	}
-
 	namespace {
 
 	float percentile_sorted(std::vector<float> const& sorted, float p)

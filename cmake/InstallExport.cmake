@@ -5,8 +5,8 @@
 #   full            — 全量库目标与头模块清单（模块落地后填写）。
 #   lidarstudio     — LidarStudio 产品白名单根目标链接闭包（模块落地后填写）。
 #
-# 已落地：common / file_system / logging / graph / point_cloud_io /
-#         fastreg_filter / global_matrix_file / depth_map_tool /
+# 已落地：common / file_system / logging / graph / registration_type /
+#         point_cloud_io / fastreg_filter / global_matrix_file / depth_map_tool /
 #         octree / overlap_estimation / resolution_estimate /
 #         robust_rough/* / robust_refine/* / robust_global_reg。
 
@@ -26,6 +26,7 @@ set(_SR_LIB_TARGETS_FULL
   file_system
   logging
   graph
+  registration_type
   scan_register
   xenium
   matcher_tsl
@@ -55,6 +56,7 @@ set(_SR_HEADER_MODULES_FULL
   file_system
   logging
   graph
+  registration_type
   teaser
   robin
   robust_matcher
@@ -78,9 +80,10 @@ set(_SR_HEADER_MODULES_PARTY
   file_system
   logging
   graph
+  registration_type
 )
 
-# Party：链接闭包根目标（伞目标拉起 common / file_system / logging）
+# Party：链接闭包根目标（伞目标拉起 common / file_system / logging / registration_type）
 set(_SR_PARTY_ROOT_TARGETS
   scan_register
 )
@@ -90,6 +93,7 @@ set(_SR_PARTY_SHARED_TARGETS
   common
   file_system
   logging
+  registration_type
 )
 
 # LidarStudio：产品面头白名单
@@ -98,6 +102,7 @@ set(_SR_HEADER_MODULES_LIDARSTUDIO
   file_system
   logging
   graph
+  registration_type
 )
 
 # LidarStudio：链接闭包根目标
@@ -106,6 +111,7 @@ set(_SR_LIDARSTUDIO_ROOT_TARGETS
   common
   file_system
   logging
+  registration_type
 )
 
 # Collect in-tree link closure (skip IMPORTED / genex / absolute paths / -l flags).

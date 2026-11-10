@@ -12,6 +12,7 @@ target_include_directories(resolution_estimate PUBLIC
 
 target_link_libraries(resolution_estimate PUBLIC
   logging
+  registration_type
   pcl_common
   Eigen3::Eigen
 )

@@ -12,6 +12,9 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | file_system | （无仓库内） | — | — | 独立文件系统工具 |
 | graph | （无） | 【最小生成树】/【连通分量】/【最短路径】 | — | 纯 std 通用图算法（INTERFACE；≠ robin/teaser 图） |
 | scan_register（伞） | graph | graph.hpp | 仓库内 | 基础图算法随伞目标导出 |
+| scan_register（伞） | registration_type | 【测站帧】/【配准边结果】 | 仓库内 | party 面类型与 JSON IO |
+| registration_type | common / logging / RapidJSON | ScanInfo / LidarFrameIO | 仓库内/外部 | 配准会话数据结构（SHARED） |
+| resolution_estimate | registration_type | 【体素场景类】(VoxelSceneClass) | 仓库内 | 曲率调制场景提示权威定义 |
 | point_cloud_io | logging / PCL / Eigen | 【FramedCloud / 点云读写】 | 仓库内/外部 | 公共 IO；局部云+可恢复 origin（无 PDAL） |
 | 测试 / Session / 精配工具等 | point_cloud_io | 【FramedCloud】(load/save) | 仓库内 | 读盘局部化；配准前后对 M / M_init 做 origin 系变换 |
 | robust_matcher | robin / matcher_* | 【鲁棒匹配器】(RobustMatcher) | 仓库内 | 鲁棒粗匹配主入口 |
@@ -25,7 +28,7 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | depth_map_tool | common / OpenCV / PCL / TBB | 【深度图工具】(DepthMapTool) | 仓库内/外部 | 点云→全景深度与格式转换（STATIC） |
 | octree | PCL / Eigen / TBB | 【体素真 Medoid 索引下采样】等 | 外部 | 哈希体素 Medoid / FastOctree / 中心近邻（INTERFACE） |
 | overlap_estimation | PCL / Eigen / OpenMP | 【体素重叠估计】/【配准重叠子集提取】 | 外部 | 点云重叠度量与子集抽取（INTERFACE） |
-| resolution_estimate | logging / PCL / Eigen | 【分辨率估计】/【分位数分辨率估计】 | 仓库内/外部 | 站心径向深度 → 推荐体素（SHARED） |
+| resolution_estimate | logging / registration_type / PCL / Eigen | 【分辨率估计】/【分位数分辨率估计】 | 仓库内/外部 | 站心径向深度 → 推荐体素（SHARED） |
 | resolution_estimate_test | point_cloud_io | 【FramedCloud】+ origin 折回站心 | 仓库内 | 站心 LAS 估分辨率前还原文件系 |
 | WorkingFrame（common） | FramedCloud.origin | 【作业系 / 可恢复原点】 | 仓库内 | 作业级 O 与每云 origin 分层；见位姿折回规则 |
 
@@ -37,6 +40,7 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | file_system | 同上 | 同上 |
 | logging | 同上 | 同上 |
 | **graph** | 同上 | 同上 |
+| **registration_type** | [`dictionaries/配准类型_Dictionary.md`](dictionaries/配准类型_Dictionary.md) | [`modules/配准类型.md`](modules/配准类型.md) |
 | **point_cloud_io** | [`dictionaries/点云IO_Dictionary.md`](dictionaries/点云IO_Dictionary.md) | [`modules/点云IO.md`](modules/点云IO.md) |
 | robust_matcher 等（`robust_rough/`） | [`dictionaries/鲁棒粗匹配_Dictionary.md`](dictionaries/鲁棒粗匹配_Dictionary.md) | [`modules/鲁棒粗匹配.md`](modules/鲁棒粗匹配.md) |
 | basic_icp 等（`robust_refine/`） | [`dictionaries/鲁棒精配_Dictionary.md`](dictionaries/鲁棒精配_Dictionary.md) | [`modules/鲁棒精配.md`](modules/鲁棒精配.md) |
