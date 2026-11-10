@@ -1,0 +1,21 @@
+---
+description: 各模块默认按动态库（SHARED）编译；未明确说明勿改用静态库
+alwaysApply: true
+---
+
+# 模块产物默认：动态库（SHARED）
+
+本仓库各算法/业务模块在 CMake 中**默认**建成**动态库**（Windows `.dll` + import lib；Linux `.so`）。
+
+## 约定
+
+1. **无明确说明 → SHARED**：新建 `add_library`、改模块类型、讨论「库怎么编」时，默认按动态库设计与接线。
+2. **仅当用户明确要求**静态库（STATIC）或 OBJECT 时才偏离；口头「随便」不算授权改默认。
+3. 跨模块单例 / 全局状态（如 `logging`）必须 SHARED，避免多份静态副本。
+4. 可执行测试 / 工具仍是 exe；它们**链接**各模块动态库，部署时保证能加载同目录或 `PATH`/`LD_LIBRARY_PATH` 中的 DLL/`.so`。
+5. 与文档或历史默认（例如曾写 `BUILD_SHARED_LIBS=OFF`）冲突时，**以本规则为准**；改 CMake 默认值须单独任务，不要 silently 跟旧 README。
+
+## 反例
+
+- 新建模块默认 `add_library(foo STATIC …)` 且未获明确静态库授权。
+- 为「省事」把整仓改回以静态库为主，而不先确认。

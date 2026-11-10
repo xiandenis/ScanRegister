@@ -1,0 +1,22 @@
+---
+description: 实现前先查全局能力索引并复用；新增模块/方法须按 rules.md 登记字典
+alwaysApply: true
+---
+
+# 能力复用优先与全局登记
+
+权威细则：[`rules.md`](../../rules.md)「实现前复用与全局登记」+「阶段一：全局索引字典」。  
+索引布局：Hub [`docs/点云算法总览_Dictionary.md`](../../docs/点云算法总览_Dictionary.md) · Spoke [`docs/dictionaries/`](../../docs/dictionaries/) · 模块 API [`docs/modules/`](../../docs/modules/)。
+
+## 约定
+
+1. **新增模块 / 公共方法 / 可复用算法块之前**，先做**既有能力检索（catalog lookup）**：读 Hub / 对应领域字典 / `docs/modules`，按【标准中文命名】与核心函数/类名查重；必要时再扫源码与 CMake 目标。
+2. **复用优先（reuse-before-reinvent）**：已有等价或可扩展能力 → 调用或扩展现有 API，**禁止**平行再造同义实现。
+3. **无则再实现**：确认索引与代码均无对应条目后，才新写模块或方法。
+4. **全局登记（capability registration）**：落地后必须按 `rules.md` 阶段一做增量登记——跨模块则更新 Hub 互用速查与依赖边；写入对应 `docs/dictionaries/<领域>_Dictionary.md`（含「模块相互依赖关系」）；公共 API 必要时同步 `docs/modules/<领域>.md`。
+5. 登记与实现同一交付节奏：代码合入时字典条目应可被后续任务检索到；不得「只写代码、不登记」。
+
+## 反例
+
+- 未查字典就新开同名/同义函数或重复模块。
+- 实现已合入但未更新全局索引，导致后续无法发现可复用能力。
