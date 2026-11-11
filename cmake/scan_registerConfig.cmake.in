@@ -4,6 +4,7 @@ include(CMakeFindDependencyMacro)
 
 find_dependency(Threads)
 find_dependency(Eigen3 3.3 NO_MODULE)
+find_dependency(Ceres)
 find_dependency(TBB)
 find_dependency(PCL COMPONENTS common registration io search features)
 find_dependency(OpenCV COMPONENTS core imgproc imgcodecs)
@@ -35,7 +36,8 @@ foreach(_sr_tgt IN ITEMS
     xenium matcher_tsl matcher_points matcher_kdtree matcher_hnswlib
     pmc teaser robin robust_matcher
     basic_icp fast_gicp small_gicp genz_icp
-    point_cloud_io robust_global_reg rough_global_reg)
+    point_cloud_io robust_global_reg rough_global_reg
+    pose_graph_opt pose_graph_tool)
   if(TARGET scan_register::${_sr_tgt} AND NOT TARGET ${_sr_tgt})
     add_library(${_sr_tgt} ALIAS scan_register::${_sr_tgt})
   endif()

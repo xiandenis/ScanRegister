@@ -27,6 +27,9 @@
 | global_matrix_file | common / logging | Common 串编解码 / LogManager | 仓库内 | 全局位姿 JSON（见全局位姿文件字典） |
 | depth_map_tool | common | 【全景坐标工具】(PanoramaUtil) | 仓库内 | 点云投影全景深度（见深度图工具字典） |
 | scan_register（伞目标） | graph | 【最小生成树】/【连通分量】/【最短路径】 | 仓库内 | 基础图算法随伞目标导出 |
+| pose_graph_tool | graph | 【最小生成树】(MinimumSpanningTree) | 仓库内 | MST 全局系传播 / 连通分组（见位姿图字典） |
+| pose_graph_tool | common | 【站名自然序比较】(naturalNameLess) | 仓库内 | 参考原点站选择 |
+| pose_graph_opt / pose_graph_tool | logging | 【日志管理器】(LogManager) | 仓库内 | PGO / 构图诊断日志 |
 | registration_type | common / logging | Common 串编解码 / LogManager | 仓库内 | 配准类型与 JSON IO（见配准类型字典） |
 | （待上层业务） | common / logging / file_system / graph | — | 仓库内 | 业务模块迁入后回填 |
 

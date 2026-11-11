@@ -35,6 +35,9 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | resolution_estimate_test | point_cloud_io | 【FramedCloud】+ origin 折回站心 | 仓库内 | 站心 LAS 估分辨率前还原文件系 |
 | registration_initializer | registration_type / point_cloud_io / octree / resolution_estimate / small_gicp | 【配准初始化器】 | 仓库内 | 测站 Root+Medoid+法向+体素分辨率（SHARED） |
 | WorkingFrame（common） | FramedCloud.origin | 【作业系 / 可恢复原点】 | 仓库内 | 作业级 O 与每云 origin 分层；见位姿折回规则 |
+| pose_graph_opt | registration_type / logging / Ceres | 【位姿图优化器】(PoseGraphOptimizer) | 仓库内/外部 | AlignResult 边 → SE(3) PGO（SHARED） |
+| pose_graph_opt | registration_type | 【配准边装入位姿图】(loadFromAlignResults) | 仓库内 | 用 AlignResult::information_ 作 Ω |
+| pose_graph_tool | registration_type / graph / common | 【全局系传播】/【位姿图分组】 | 仓库内 | MST+DFS 全局阵；连通分量分组（SHARED） |
 
 ## 已登记模块
 
@@ -57,3 +60,4 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | **octree** | [`dictionaries/八叉树_Dictionary.md`](dictionaries/八叉树_Dictionary.md) | [`modules/八叉树.md`](modules/八叉树.md) |
 | **overlap_estimation** | [`dictionaries/重叠估计_Dictionary.md`](dictionaries/重叠估计_Dictionary.md) | [`modules/重叠估计.md`](modules/重叠估计.md) |
 | **resolution_estimate** | [`dictionaries/分辨率估计_Dictionary.md`](dictionaries/分辨率估计_Dictionary.md) | [`modules/分辨率估计.md`](modules/分辨率估计.md) |
+| **pose_graph_opt** / **pose_graph_tool**（`pose_graph/`） | [`dictionaries/位姿图_Dictionary.md`](dictionaries/位姿图_Dictionary.md) | [`modules/位姿图.md`](modules/位姿图.md) |

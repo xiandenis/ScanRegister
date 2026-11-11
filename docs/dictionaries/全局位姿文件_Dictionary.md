@@ -19,7 +19,8 @@
 
 | 调用方 | 被调用方 | 关键衔接点（标准中文命名 / 代码名） | 依赖类型 (仓库内/外部) | 一句话说明 |
 |--------|----------|--------------------------------------|------------------------|------------|
-| （待上层 Session / 位姿图） | global_matrix_file | 【全局位姿文件读写】(GlobalMatrixFileIO) | 仓库内 | 业务接入后回填 |
+| pose_graph_tool（上游产出） | global_matrix_file | 【全局位姿文件读写】(GlobalMatrixFileIO) | 仓库内 | PoseGlobalSystem 的 map 可经本模块落盘（调用方接线） |
+| （待上层 Session） | global_matrix_file | 【全局位姿文件读写】(GlobalMatrixFileIO) | 仓库内 | Session 挂接后回填 |
 
 ---
 

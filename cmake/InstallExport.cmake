@@ -9,7 +9,8 @@
 #         point_cloud_io / fastreg_filter / global_matrix_file / depth_map_tool /
 #         octree / overlap_estimation / resolution_estimate /
 #         robust_rough/* / robust_refine/* / registration_initializer /
-#         robust_global_reg / rough_global_reg。
+#         robust_global_reg / rough_global_reg /
+#         pose_graph/pose_graph_opt / pose_graph/pose_graph_tool。
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -52,6 +53,8 @@ set(_SR_LIB_TARGETS_FULL
   registration_initializer
   robust_global_reg
   rough_global_reg
+  pose_graph_opt
+  pose_graph_tool
 )
 
 set(_SR_HEADER_MODULES_FULL
@@ -77,6 +80,8 @@ set(_SR_HEADER_MODULES_FULL
   registration_initializer
   robust_global_reg
   rough_global_reg
+  pose_graph_opt
+  pose_graph_tool
 )
 
 # Party：对外头文件模块（与库一并交付）
@@ -268,6 +273,8 @@ foreach(_mod IN LISTS _SR_HEADER_MODULES)
     set(_SR_HDR_SRC "${SCAN_REGISTER_INCLUDE_ROOT}/robust_refine/${_mod}")
   elseif(IS_DIRECTORY "${SCAN_REGISTER_INCLUDE_ROOT}/robust_rough/${_mod}")
     set(_SR_HDR_SRC "${SCAN_REGISTER_INCLUDE_ROOT}/robust_rough/${_mod}")
+  elseif(IS_DIRECTORY "${SCAN_REGISTER_INCLUDE_ROOT}/pose_graph/${_mod}")
+    set(_SR_HDR_SRC "${SCAN_REGISTER_INCLUDE_ROOT}/pose_graph/${_mod}")
   elseif(IS_DIRECTORY "${SCAN_REGISTER_INCLUDE_ROOT}/${_mod}")
     set(_SR_HDR_SRC "${SCAN_REGISTER_INCLUDE_ROOT}/${_mod}")
   endif()

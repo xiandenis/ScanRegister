@@ -77,8 +77,11 @@ add_subdirectory(robust_global_reg)
 # Coarse global registration business facade (ScanInfo → FramedCloud → RobustGlobalReg).
 add_subdirectory(rough_global_reg)
 
+# Pose graph: Ceres PGO (pose_graph_opt) + connectivity / global-frame tools (pose_graph_tool).
+add_subdirectory(pose_graph)
+
 # Umbrella INTERFACE for Session/foundation consumers: scan_register::scan_register
-# (refine / rough targets are opt-in: link scan_register::<target> explicitly.)
+# (refine / rough / pose_graph targets are opt-in: link scan_register::<target> explicitly.)
 add_library(scan_register INTERFACE)
 add_library(scan_register::scan_register ALIAS scan_register)
 target_link_libraries(scan_register INTERFACE
