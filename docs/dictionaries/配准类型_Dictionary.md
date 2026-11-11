@@ -24,7 +24,9 @@ Session / party 面基础类型库；`VoxelSceneClass` 以本模块为权威（`
 | resolution_estimate | registration_type | 【体素场景类】(VoxelSceneClass) | 仓库内 | 分位数曲率调制场景提示 |
 | registration_initializer | registration_type | LidarFrame / VoxelSceneClass | 仓库内 | 测站初始化写回帧与场景类 |
 | rough_global_reg | registration_type | 【扫描信息】/【测站帧】/【配准边结果】 | 仓库内 | ScanInfo(las) 与 LidarFrame(voxel_3) 双入口 |
-| （待上层 Session / 位姿图） | registration_type | 【测站帧】/【配准边结果】IO | 仓库内 | 业务接入后回填 |
+| pose_graph_opt | registration_type | 【配准边结果】(AlignResult::information_ / matrix_) | 仓库内 | loadFromAlignResults 装入 PGO |
+| pose_graph_tool | registration_type | 【测站帧】/【配准边结果】 | 仓库内 | PoseBase 构图与分组 |
+| （待上层 Session） | registration_type | 【测站帧】/【配准边结果】IO | 仓库内 | Session 挂接后回填 |
 
 ---
 
@@ -56,9 +58,9 @@ Session / party 面基础类型库；`VoxelSceneClass` 以本模块为权威（`
 | 11 | Root 体素描述 | VoxelRoot | 公共 | 角度深度筛选层路径与状态；PCD 为站心系 |
 | 12 | 子体素描述 | SubVoxel | 公共 | 如 voxel_3；缓存点云/法向为站心系 |
 | 13 | 状态位标志 | StateType / stateHas | 公共 | VALID/HAS_CALCU 等位标志，禁止裸 == VALID |
-| 16 | 站心声明 | has_station_origin_ / station_origin_ | 公共 | 用户声明文件系站心；禁推断；须经 LidarFrameIO 持久化 |
+| 16 | 站心–架站契约 | SENSOR_STAND / isSensorStand / station_origin_ | 公共 | 仅明确知道站心才可 SENSOR_STAND；默认 OTHER_SENSOR；禁推断；LidarFrameIO 持久化 sensor+station_origin |
 
-**站心与缓存坐标系**：`station_origin_` 在**原始文件坐标系**；初始化后 Root/子体素 PCD 均为站心系（站心在原点），PCD 自身不带站心。下游必须同时持有 `LidarFrame`/`ScanInfo`。站心系相对阵折回文件系：\(M_{\mathrm{file}}=T(O_t)M_{\mathrm{station}}T(-O_s)\)（\(O\) 为站心，≠ `FramedCloud.origin`）。
+**站心与缓存坐标系**：声明 = `sensor_ |= SENSOR_STAND` + `station_origin_`（**原始文件坐标系**；可为 Zero）。未知站心不得标 `SENSOR_STAND`。初始化后 Root/子体素 PCD 均为站心系（站心在原点），PCD 自身不带站心。下游必须同时持有 `LidarFrame`/`ScanInfo`。站心系相对阵折回文件系：\(M_{\mathrm{file}}=T(O_t)M_{\mathrm{station}}T(-O_s)\)（\(O\) 为站心，≠ `FramedCloud.origin`）。
 
 #### 2、配准边结果（AlignResult）
 

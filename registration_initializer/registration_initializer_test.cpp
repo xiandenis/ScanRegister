@@ -57,14 +57,14 @@ static bool run_pipeline(bool use_root, Ddx::LidarFrame const& scan_info)
 	frame.name_ = scan_info.name_;
 	frame.lasFn_ = scan_info.lasFn_;
 	frame.info_folder_ = scan_info.info_folder_;
-	frame.has_station_origin_ = scan_info.has_station_origin_;
+	frame.sensor_ = scan_info.sensor_;
 	frame.station_origin_ = scan_info.station_origin_;
 
 	std::cout << "  --- use_root=" << use_root << " ---\n";
 	std::cout << "  name: " << frame.name_ << "\n";
 	std::cout << "  lasFn: " << frame.lasFn_ << "\n";
 	std::cout << "  info_folder: " << frame.info_folder_ << "\n";
-	std::cout << "  has_station_origin=" << frame.has_station_origin_
+	std::cout << "  SENSOR_STAND=" << Ddx::isSensorStand(frame.sensor_)
 	          << " station_origin=(" << frame.station_origin_.x() << ", "
 	          << frame.station_origin_.y() << ", " << frame.station_origin_.z() << ")\n";
 
@@ -87,7 +87,7 @@ static bool run_pipeline(bool use_root, Ddx::LidarFrame const& scan_info)
 	check((frame.state_ & Ddx::HAS_CALCU) == Ddx::HAS_CALCU, "frame state should be HAS_CALCU");
 	check(frame.voxel_size_ > 0.0, "voxel_size should be positive");
 	check(frame.point_number_ >= 10, "point_number should reflect loaded cloud");
-	check(frame.has_station_origin_, "station origin declaration should persist");
+	check(Ddx::isSensorStand(frame.sensor_), "SENSOR_STAND declaration should persist");
 
 	for (auto const& voxel : frame.subvoxel_vec_) {
 		check((voxel.state_ & Ddx::HAS_CALCU) == Ddx::HAS_CALCU, "subvoxel should be computed");
@@ -117,7 +117,7 @@ static bool run_pipeline(bool use_root, Ddx::LidarFrame const& scan_info)
 	std::string const info_path = frame.getInfoPath();
 	Ddx::LidarFrame loaded;
 	check(Ddx::LidarFrameIO::loadLidarFrame(info_path, loaded), "reload LidarFrame JSON");
-	check(loaded.has_station_origin_, "JSON roundtrip has_station_origin");
+	check(Ddx::isSensorStand(loaded.sensor_), "JSON roundtrip SENSOR_STAND");
 	check((loaded.station_origin_ - frame.station_origin_).norm() < 1e-9,
 	      "JSON roundtrip station_origin");
 
@@ -134,20 +134,20 @@ static Ddx::LidarFrame make_scan_info_from_slas(fs::path const& slas_path, fs::p
 	frame.name_ = slas_path.stem().string();
 	frame.lasFn_ = slas_path.string();
 	frame.info_folder_ = (info_root / frame.name_).string();
-	// Real stand-scan inputs are assumed station-centered in file CRS unless caller overrides.
-	frame.has_station_origin_ = true;
+	// Real stand-scan inputs: SENSOR_STAND + known station origin (file CRS Zero unless overridden).
+	frame.sensor_ = Ddx::SENSOR_STAND;
 	frame.station_origin_ = Eigen::Vector3d::Zero();
 	return frame;
 }
 
 static bool run_undeclared_station_origin_case(fs::path const& work_dir, fs::path const& las_path)
 {
-	std::cout << "  --- undeclared station_origin (expect fail) ---\n";
+	std::cout << "  --- non-SENSOR_STAND (expect fail) ---\n";
 	Ddx::LidarFrame frame;
 	frame.name_ = "no_station";
 	frame.lasFn_ = las_path.string();
 	frame.info_folder_ = (work_dir / "info_undeclared").string();
-	frame.has_station_origin_ = false;
+	frame.sensor_ = Ddx::OTHER_SENSOR;
 	fs::create_directories(frame.info_folder_);
 
 	Ddx::RegistrationInitializer init;
@@ -156,10 +156,10 @@ static bool run_undeclared_station_origin_case(fs::path const& work_dir, fs::pat
 		return false;
 	}
 	if (init.initializd(frame, true)) {
-		std::cerr << "  initializd should reject undeclared station_origin\n";
+		std::cerr << "  initializd should reject non-SENSOR_STAND\n";
 		return false;
 	}
-	std::cout << "  undeclared station_origin rejected as expected\n";
+	std::cout << "  non-SENSOR_STAND rejected as expected\n";
 	return true;
 }
 
@@ -181,7 +181,7 @@ static int run_synthetic_test(fs::path const& work_dir)
 	scan.name_ = "test_frame";
 	scan.lasFn_ = las_path.string();
 	scan.info_folder_ = (work_dir / "info").string();
-	scan.has_station_origin_ = true;
+	scan.sensor_ = Ddx::SENSOR_STAND;
 	scan.station_origin_ = Eigen::Vector3d::Zero();
 
 	int scenario_failures = 0;

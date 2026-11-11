@@ -27,8 +27,7 @@ static Ddx::LidarFrame makeFrame(fs::path const& las_path, fs::path const& info_
 	frame.lasFn_ = las_path.string();
 	frame.info_folder_ = (info_root / frame.name_).string();
 	frame.sensor_ = Ddx::SENSOR_STAND;
-	// Stand-scan test default: file CRS already station-centered unless overridden.
-	frame.has_station_origin_ = true;
+	// Stand-scan test default: SENSOR_STAND + file CRS already station-centered unless overridden.
 	frame.station_origin_ = Eigen::Vector3d::Zero();
 	return frame;
 }

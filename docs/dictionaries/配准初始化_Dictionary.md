@@ -3,7 +3,7 @@
 覆盖模块：`registration_initializer`（测站帧初始化：Root 角栅格筛选、Medoid 子体素、法向、分辨率估计）。  
 **产物约定**：`registration_initializer` 为 **SHARED**。
 
-读盘走 `FramedCloud`；须用户在 `ScanInfo` 声明 `has_station_origin_` + `station_origin_`（文件系），禁止猜测。  
+读盘走 `FramedCloud`；**仅** `SENSOR_STAND` 数据可用：须 `sensor_ |= SENSOR_STAND` 并填写 `station_origin_`（文件系），禁止猜测；未知站心不得标 `SENSOR_STAND`。  
 折系：\(p_{\mathrm{station}}=p_{\mathrm{local}}+O_{\mathrm{framed}}-O_{\mathrm{station}}\)。此后 Root/子体素/法向缓存均为站心系，语义只活在 `LidarFrame`。  
 `AngleDownsample` 暂内置于本模块；完整 `cloud_sample` 迁入后可改回复用。
 

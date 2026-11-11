@@ -154,8 +154,7 @@ namespace Ddx
 		j_io.AddMember("angle_resolution", frame.angle_resolution_, allocator);
 		j_io.AddMember("gps", getValue(Common::vector3d_to_string(frame.gps_), allocator), allocator);
 		j_io.AddMember("global_matrix", getValue(Common::matrix_to_south_string(frame.global_matrix_), allocator), allocator);
-		// 站心与 Root/子体素站心系缓存同生命周期；丢站心则 M 无法折回文件系。
-		j_io.AddMember("has_station_origin", frame.has_station_origin_, allocator);
+		// 站心与 Root/子体素站心系缓存同生命周期；SENSOR_STAND 表示站心已声明。
 		j_io.AddMember(
 			"station_origin",
 			getValue(Common::vector3d_to_string(frame.station_origin_), allocator),
@@ -262,11 +261,13 @@ namespace Ddx
 		frame.angle_resolution_ = j_io["angle_resolution"].GetInt();
 		frame.gps_ = Common::string_to_vector3d(j_io["gps"].GetString());
 		frame.global_matrix_ = Common::south_string_to_matrix(j_io["global_matrix"].GetString());
-		// 旧 JSON 缺站心字段 → 未声明（安全默认）；须由用户补声明后再 init。
+		// 旧 JSON 的 has_station_origin 迁移到 SENSOR_STAND；新格式只信 sensor_。
 		if (j_io.HasMember("has_station_origin") && j_io["has_station_origin"].IsBool()) {
-			frame.has_station_origin_ = j_io["has_station_origin"].GetBool();
-		} else {
-			frame.has_station_origin_ = false;
+			if (j_io["has_station_origin"].GetBool()) {
+				frame.sensor_ = static_cast<SensorInfo>(frame.sensor_ | SENSOR_STAND);
+			} else {
+				frame.sensor_ = static_cast<SensorInfo>(frame.sensor_ & ~SENSOR_STAND);
+			}
 		}
 		if (j_io.HasMember("station_origin") && j_io["station_origin"].IsString()) {
 			frame.station_origin_ = Common::string_to_vector3d(j_io["station_origin"].GetString());

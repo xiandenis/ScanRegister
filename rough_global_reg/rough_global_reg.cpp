@@ -120,10 +120,10 @@ namespace
 
     bool RoughGlobalReg::canUseCompass(ScanInfo const& source, ScanInfo const& target)
     {
-        return (source.sensor_ & SENSOR_COMPASS) == SENSOR_COMPASS
-            && (target.sensor_ & SENSOR_COMPASS) == SENSOR_COMPASS
-            && source.has_station_origin_
-            && target.has_station_origin_;
+        return sensorHas(source.sensor_, SENSOR_COMPASS)
+            && sensorHas(target.sensor_, SENSOR_COMPASS)
+            && isSensorStand(source.sensor_)
+            && isSensorStand(target.sensor_);
     }
 
     bool RoughGlobalReg::isReadyLidarFrame(LidarFrame const& frame, std::string* reason)
@@ -135,9 +135,9 @@ namespace
             return false;
         };
 
-        // Must be station-centered (站心系) and already initialized.
-        if (!frame.has_station_origin_) {
-            return fail("has_station_origin_ is false");
+        // Must be SENSOR_STAND (known station origin) and already initialized.
+        if (!isSensorStand(frame.sensor_)) {
+            return fail("sensor_ missing SENSOR_STAND (station origin not declared)");
         }
         if (!stateHas(frame.state_, HAS_CALCU)) {
             return fail("frame not initialized (missing HAS_CALCU; run RegistrationInitializer)");
@@ -226,10 +226,10 @@ namespace
         }
 
         if (use_compass) {
-            if (!source.has_station_origin_ || !target.has_station_origin_) {
+            if (!isSensorStand(source.sensor_) || !isSensorStand(target.sensor_)) {
                 LOG_ERROR(
-                    "use_compass requires station-centered ScanInfo "
-                    "(has_station_origin_ on both); refused ({} / {})",
+                    "use_compass requires SENSOR_STAND ScanInfo on both "
+                    "(known station_origin_); refused ({} / {})",
                     source.name_, target.name_);
                 m_alignResult.state_ = INVALID;
                 return false;
@@ -290,7 +290,7 @@ namespace
                                            float resolution, int iter_number, bool use_compass,
                                            Eigen::Matrix4d const* initial_guess_world)
     {
-        // LidarFrame API: station-centered data + finished RegistrationInitializer only.
+        // LidarFrame API: SENSOR_STAND-only + finished RegistrationInitializer.
         std::string src_reason;
         std::string tgt_reason;
         if (!isReadyLidarFrame(source, &src_reason)) {

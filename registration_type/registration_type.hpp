@@ -6,18 +6,23 @@
 
 namespace Ddx {
 
-// 传感器使用情况
+// 传感器使用情况（位标志，可 OR 组合）
 typedef int SensorInfo;
 enum
 {
 	OTHER_SENSOR = 0,			// 其他传感器/其它设备数据/以及跨源数据/地图（没有法向量数据）
-	SENSOR_STAND = 1,			// 架站
+	/// 架站且测站原点（站心）已知。未知站心禁止设此位；registration_initializer 仅接受此位。
+	SENSOR_STAND = 1,
 	SENSOR_INCLINOMETER = 2,	// 倾角器
 	SENSOR_ALTIMETER = 4,		// 高度计
 	SENSOR_COMPASS = 8,			// 罗盘
 	SENSOR_GPS = 16,			// GPS
 	SENSOR_INS = 32,			// 惯导
 };
+
+/// SensorInfo 为位标志。禁止用 == SENSOR_STAND 判断「是否架站」。
+inline bool sensorHas(SensorInfo s, SensorInfo flag) { return (s & flag) == flag; }
+inline bool isSensorStand(SensorInfo s) { return sensorHas(s, SENSOR_STAND); }
 
 // 扫描信息
 struct ScanInfo
@@ -29,14 +34,15 @@ struct ScanInfo
 	std::string json_;				// 额外 JSON（可空）
 	/// 为 true 且 lasFn_ 是文件夹时，初始化缓存放在该文件夹下。默认 false，缓存放在外部 data_info。
 	bool cache_in_source_ = false;
-	SensorInfo sensor_;				// 传感器位标志（见 SensorInfo）
+	/// 传感器位标志。默认 OTHER_SENSOR。仅明确知道站心时才可 |= SENSOR_STAND。
+	SensorInfo sensor_;
 	double altimeter_;				// 高度计读数 [m]（相对/绝对依设备约定）
 	Eigen::Vector3d gps_;			// GPS / 地理坐标（设备约定；非本库配准坐标系）
 	int angle_resolution_;			// 角分辨率编码；0=无；SLS 常见 3/6/12/24
 	Eigen::Matrix4d global_matrix_;	// 世界←测站 4×4；平移单位 [m]
-	/// 用户是否已声明站心。false → registration_initializer 拒绝，禁止从文件推断。
-	bool has_station_origin_ = false;
-	/// 站心在原始点云文件坐标系下的位置 [m]。仅 has_station_origin_ 时有效。
+	/// 站心在原始点云文件坐标系下的位置 [m]。仅 isSensorStand(sensor_) 时有效。
+	/// 声明方式：sensor_ |= SENSOR_STAND 并填写本字段（可为 Zero，表示站心在文件系原点）。
+	/// 禁止从文件推断；未知站心不得标 SENSOR_STAND。
 	/// 初始化后缓存点云均为站心系；折回文件系依赖本字段，必须随 LidarFrame 贯穿。
 	/// ≠ FramedCloud.origin（IO float 局部化），≠ global_matrix_ 平移。
 	Eigen::Vector3d station_origin_ = Eigen::Vector3d::Zero();

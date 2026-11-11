@@ -35,12 +35,11 @@ ScanInfo::ScanInfo()
 	, normalFn_("")
 	, json_("")
 	, cache_in_source_(false)
-	, sensor_(SENSOR_STAND | SENSOR_INCLINOMETER)
+	, sensor_(OTHER_SENSOR)
 	, altimeter_(0)
 	, gps_(Eigen::Vector3d::Zero())
 	, angle_resolution_(0)
 	, global_matrix_(Eigen::Matrix4d::Identity())
-	, has_station_origin_(false)
 	, station_origin_(Eigen::Vector3d::Zero())
 {
 }
@@ -106,7 +105,6 @@ void LidarFrame::setScanInfo(ScanInfo const& info)
 	gps_ = info.gps_;
 	angle_resolution_ = info.angle_resolution_;
 	global_matrix_ = info.global_matrix_;
-	has_station_origin_ = info.has_station_origin_;
 	station_origin_ = info.station_origin_;
 }
 

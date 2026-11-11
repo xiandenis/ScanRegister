@@ -105,10 +105,11 @@ using pcl_type::NormalPtr;
 			return false;
 		}
 
-		// 站心必须用户声明；禁止从文件猜测。折系后 Root/子体素缓存均为站心系。
-		if (!frame.has_station_origin_) {
+		// 仅 SENSOR_STAND（站心已知）可初始化；禁止从文件猜测站心。折系后 Root/子体素缓存均为站心系。
+		if (!isSensorStand(frame.sensor_)) {
 			LOG_ERROR(
-				" {} has_station_origin_ is false; declare station_origin_ in file CRS before init ",
+				" {} is not SENSOR_STAND; set sensor_ |= SENSOR_STAND and station_origin_ "
+				"(file CRS) before init ",
 				frame.name_);
 			return false;
 		}
