@@ -1,7 +1,7 @@
 # 全局位姿文件_Dictionary
 
 覆盖模块：`global_matrix_file`（多站全局位姿 JSON 读写）。  
-**产物约定**：`global_matrix_file` 为 **STATIC**（模块 CMake 约定）。
+**产物约定**：`global_matrix_file` 为 **SHARED**（仓库默认）。
 
 与 `Common::matrix_to_south_string`（单阵南向串）互补：本模块按工程 JSON（`Transformation[]`：name / rotation / translation）批量读写站名→`Matrix4d`。
 

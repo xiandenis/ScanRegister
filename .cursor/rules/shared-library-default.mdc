@@ -14,7 +14,7 @@ alwaysApply: true
    - 已明确 STATIC 的叶子：
      - `robust_rough/`：`matcher_hnswlib`、`matcher_kdtree`、`matcher_points`、`matcher_tsl`、`pmc`、`teaser`、`robin`、`robust_matcher`（header-only 用 INTERFACE；`xenium` 为 robin 的 vendored INTERFACE）
      - `robust_refine/`：`basic_icp`、`small_gicp`、`genz_icp` 为 STATIC；`fast_gicp` 为 header-only INTERFACE
-     - `robust_global_reg`：STATIC（模块自带 CMake 约定）
+     - （`trim_icp`、`robust_global_reg`、`rough_global_reg`、`global_matrix_file`、`fastreg_filter`、`depth_map_tool` 为 SHARED，不在本 STATIC 例外列表）
 3. 跨模块单例 / 全局状态（如 `logging`）必须 SHARED，避免多份静态副本。
 4. 可执行测试 / 工具仍是 exe；它们**链接**各模块动态库，部署时保证能加载同目录或 `PATH`/`LD_LIBRARY_PATH` 中的 DLL/`.so`。
 5. 与文档或历史默认（例如曾写 `BUILD_SHARED_LIBS=OFF`）冲突时，**以本规则为准**；改 CMake 默认值须单独任务，不要 silently 跟旧 README。

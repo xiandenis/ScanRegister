@@ -68,6 +68,9 @@ add_subdirectory(robust_rough)
 # Fine / ICP refine stack (STATIC leaves under robust_refine/; needs matcher_tsl).
 add_subdirectory(robust_refine)
 
+# TrimICP（仓库根 trim_icp/；依赖 robust_refine/basic_icp + octree；不并入 robust_refine）。
+add_subdirectory(trim_icp)
+
 # Station init (needs small_gicp normals + resolution_estimate + octree Medoid).
 add_subdirectory(registration_initializer)
 

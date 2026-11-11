@@ -1,5 +1,5 @@
-# Explicit STATIC (module CMake as provided / panorama depth-map utility leaf).
-add_library(depth_map_tool STATIC
+# Default SHARED per repo shared-library policy.
+add_library(depth_map_tool SHARED
   depth_map_tool.cpp
 )
 
@@ -18,7 +18,10 @@ target_link_libraries(depth_map_tool PUBLIC
 
 target_compile_definitions(depth_map_tool PRIVATE _USE_MATH_DEFINES)
 
-set_target_properties(depth_map_tool PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(depth_map_tool PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  WINDOWS_EXPORT_ALL_SYMBOLS ON
+)
 
 scan_register_apply_compat(depth_map_tool)
 

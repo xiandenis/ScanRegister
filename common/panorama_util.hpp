@@ -7,27 +7,27 @@ namespace Ddx
 	class PanoramaUtil
 	{
 	public:
-		// ´Ó¿Õ¼ä£¨ x , y , z £©µ½ÇòÃæ×ø±ê £¨ theta , phi £©
+		// ä»ç©ºé—´ï¼ˆ x , y , z ï¼‰åˆ°çƒé¢åæ ‡ ï¼ˆ theta , phi ï¼‰
 		static Eigen::Vector2f math_spherical_xy_from_xyz(const Eigen::Vector3f& xyz_);
-		// ´ÓÇòÃæ×ø±ê £¨ theta , phi £©µ½¿Õ¼ä£¨ x , y , z £©
+		// ä»çƒé¢åæ ‡ ï¼ˆ theta , phi ï¼‰åˆ°ç©ºé—´ï¼ˆ x , y , z ï¼‰
 		static Eigen::Vector3f math_xyz_from_spherical_xy(const Eigen::Vector2f& xy_);
 
-		// ´ÓÇòÃæ×ø±ê£¨ theta , phi £©µ½ÎÆÀí×ø±ê ( x , y )
+		// ä»çƒé¢åæ ‡ï¼ˆ theta , phi ï¼‰åˆ°çº¹ç†åæ ‡ ( x , y )
 		static Eigen::Vector2f math_texture_xy_from_spherical_xy(const Eigen::Vector2f& xy_);
 		static Eigen::Vector2f math_texture_xy_from_spherical_xy(float const& theta, float const& phi);
 
-		// ´ÓÎÆÀí×ø±ê( x , y )µ½ÇòÃæ×ø±ê£¨ theta , phi £©
+		// ä»çº¹ç†åæ ‡( x , y )åˆ°çƒé¢åæ ‡ï¼ˆ theta , phi ï¼‰
 		static Eigen::Vector2f math_spherical_xy_from_texture_xy(const Eigen::Vector2f& xy_);
 		static Eigen::Vector2f math_spherical_xy_from_texture_xy(float const& x, float const& y);
 
-		// ´ÓÎÆÀí×ø±ê£¨x , y ) µ½ ÏñËØ×ø±ê£¨u , v )
+		// ä»çº¹ç†åæ ‡ï¼ˆx , y ) åˆ° åƒç´ åæ ‡ï¼ˆu , v )
 		static Eigen::Vector2i math_pixel_from_texture_xy(const Eigen::Vector2f& xy_, int width, int height);
 		static Eigen::Vector2i math_pixel_from_texture_xy(float const& x, float const& y, int width, int height);
 
-		// ´Ó¿Õ¼äÖ±½Óµ½È«¾°Í¼ÏñËØµã
+		// ä»ç©ºé—´ç›´æ¥åˆ°å…¨æ™¯å›¾åƒç´ ç‚¹
 		static Eigen::Vector2i math_pixel_from_xyz(const Eigen::Vector3f& xyz_, int width, int height);
 
-		// ´ÓÈ«¾°Í¼ÏñËØµãÖ±½Óµ½¿Õ¼ä×ø±ê
+		// ä»å…¨æ™¯å›¾åƒç´ ç‚¹ç›´æ¥åˆ°ç©ºé—´åæ ‡
 		static Eigen::Vector3f math_xyz_from_pixel(const Eigen::Vector2i& xy_, int width, int height);
 		static Eigen::Vector3f math_xyz_from_pixel(const Eigen::Vector2f& xy_, int width, int height);
 

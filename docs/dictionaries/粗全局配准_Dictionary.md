@@ -3,7 +3,7 @@
 覆盖模块：`robust_global_reg`（站间粗全局配准内核）、`rough_global_reg`（业务门面）。  
 公共点云 IO 见独立领域：[`点云IO_Dictionary.md`](点云IO_Dictionary.md)（`point_cloud_io` / `FramedCloud`）。
 
-**产物约定**：`robust_global_reg`、`rough_global_reg` 均为 **STATIC**（模块 CMake 约定）。内核**不**链接 `point_cloud_io`；门面链接 `point_cloud_io` 做读盘与局部化。
+**产物约定**：`robust_global_reg`、`rough_global_reg` 均为 **SHARED**（仓库默认）。内核**不**链接 `point_cloud_io`；门面链接 `point_cloud_io` 做读盘与局部化。
 
 ## 模块相互依赖关系
 
@@ -63,7 +63,7 @@
 
 ## 模块：robust_global_reg
 
-依赖摘要：STATIC；链 robust_matcher、common、logging、file_system。**不**链 `point_cloud_io`。
+依赖摘要：SHARED；链 robust_matcher、common、logging、file_system。**不**链 `point_cloud_io`。
 
 ### 文件级算法条目
 
@@ -99,7 +99,7 @@
 
 ## 模块：rough_global_reg
 
-依赖摘要：STATIC；PUBLIC 链 `robust_global_reg`、`point_cloud_io`、`registration_type`、Eigen、`file_system`、`logging`。
+依赖摘要：SHARED；PUBLIC 链 `robust_global_reg`、`point_cloud_io`、`registration_type`、Eigen、`file_system`、`logging`。
 
 ### 文件级算法条目
 

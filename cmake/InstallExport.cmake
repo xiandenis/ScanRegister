@@ -8,7 +8,7 @@
 # 已落地：common / file_system / logging / graph / registration_type /
 #         point_cloud_io / fastreg_filter / global_matrix_file / depth_map_tool /
 #         octree / overlap_estimation / resolution_estimate /
-#         robust_rough/* / robust_refine/* / registration_initializer /
+#         robust_rough/* / robust_refine/* / trim_icp / registration_initializer /
 #         robust_global_reg / rough_global_reg /
 #         pose_graph/pose_graph_opt / pose_graph/pose_graph_tool。
 
@@ -43,6 +43,7 @@ set(_SR_LIB_TARGETS_FULL
   fast_gicp
   small_gicp
   genz_icp
+  trim_icp
   point_cloud_io
   fastreg_filter
   global_matrix_file
@@ -70,6 +71,7 @@ set(_SR_HEADER_MODULES_FULL
   fast_gicp
   small_gicp
   genz_icp
+  trim_icp
   point_cloud_io
   fastreg_filter
   global_matrix_file

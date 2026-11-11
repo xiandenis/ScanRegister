@@ -19,8 +19,8 @@ namespace Ddx
 	PanoramaUtil::math_spherical_xy_from_xyz(const Eigen::Vector3f& xyz_)
 	{
 		const auto r1x = xyz_.normalized();
-		const auto r2x = std::atan2(r1x[1], r1x[0]);		// theta	·½Î»½Ç(Ë®Æ½½Ç¶È)
-		const auto r3x = std::acos(r1x[2]);					// phi		Ñö½Ç£¨ÊúÖ±½Ç¶È£©
+		const auto r2x = std::atan2(r1x[1], r1x[0]);		// theta	æ–¹ä½è§’(æ°´å¹³è§’åº¦)
+		const auto r3x = std::acos(r1x[2]);					// phi		ä»°è§’ï¼ˆç«–ç›´è§’åº¦ï¼‰
 		return Eigen::Vector2f(r2x, r3x);
 	}
 
@@ -72,11 +72,11 @@ namespace Ddx
 	Eigen::Vector2i
 	PanoramaUtil::math_pixel_from_texture_xy(float const& x, float const& y, int width, int height)
 	{
-		// È¡¹Ì¶¨µÄ·¶Î§
+		// å–å›ºå®šçš„èŒƒå›´
 		const float r1x = clamp(x * float(width), 0, float(width) - 1e-5);
 		const float r2x = clamp(y * float(height), 0, float(height) - 1e-5);
 
-		// ÏòÏÂÈ¡Õû
+		// å‘ä¸‹å–æ•´
 		const auto r3x = static_cast<int> (std::floor(r1x));
 		const auto r4x = static_cast<int> (std::floor(r2x));
 
@@ -95,20 +95,20 @@ namespace Ddx
 	Eigen::Vector2i
 	PanoramaUtil::math_pixel_from_xyz(const Eigen::Vector3f& xyz_, int width, int height)
 	{
-		// ¿Õ¼äµ½ÇòÃæ×ø±êÏµ
+		// ç©ºé—´åˆ°çƒé¢åæ ‡ç³»
 		const auto r1x = math_spherical_xy_from_xyz(xyz_);
 
-		// ´ÓÇòÃæµ½ ÎÆÀí¿Õ¼ä
+		// ä»çƒé¢åˆ° çº¹ç†ç©ºé—´
 		const auto r2x = math_texture_xy_from_spherical_xy(r1x);
 
-		// ´ÓÎÆÀí¿Õ¼äµ½ÏñËØ¿Õ¼ä
+		// ä»çº¹ç†ç©ºé—´åˆ°åƒç´ ç©ºé—´
 		return math_pixel_from_texture_xy(r2x, width, height);
 	}
 
 	Eigen::Vector3f
 	PanoramaUtil::math_xyz_from_pixel(const Eigen::Vector2i& xy_, int width, int height)
 	{
-		// ´ÓÏñËØ¿Õ¼äµ½ÎÆÀí¿Õ¼ä
+		// ä»åƒç´ ç©ºé—´åˆ°çº¹ç†ç©ºé—´
 		Eigen::Vector2f r1x;
 		r1x[0] = clamp((xy_[0] + 0.5f) / float(width), 0.f, float(1.0));
 		r1x[1] = clamp((xy_[1] + 0.5f) / float(height), 0.f, float(1.0));
@@ -121,7 +121,7 @@ namespace Ddx
 	Eigen::Vector3f
 	PanoramaUtil::math_xyz_from_pixel(const Eigen::Vector2f& xy_, int width, int height)
 	{
-		// ´ÓÏñËØ¿Õ¼äµ½ÎÆÀí¿Õ¼ä
+		// ä»åƒç´ ç©ºé—´åˆ°çº¹ç†ç©ºé—´
 		Eigen::Vector2f r1x;
 		r1x[0] = clamp(xy_[0] / float(width), 0.f, float(1.0));
 		r1x[1] = clamp(xy_[1] / float(height), 0.f, float(1.0));

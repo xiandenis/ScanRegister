@@ -22,13 +22,14 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | teaser | pmc / PCL / FLANN | 【TEASER 对齐】(TeaserAlign) | 仓库内/外部 | TEASER++ 鲁棒刚体配准 |
 | genz_icp | matcher_tsl / PCL / TBB | 【GenZ-ICP】(genz_icp) | 仓库内/外部 | 精配准后端之一 |
 | small_gicp / basic_icp / fast_gicp | Eigen / PCL / OpenMP | 精配 ICP 集合 | 仓库内/外部 | `robust_refine/` |
+| trim_icp | basic_icp / octree / PCL | 【TrimICP】(TrimICP) | 仓库内/外部 | 重叠裁剪+可选 NC 预筛的精配后端（仓库根） |
 | robust_global_reg | robust_matcher | 【鲁棒全局配准】(RobustGlobalReg) | 仓库内 | 站间粗全局配准（内存点云；I/O 由调用方） |
 | rough_global_reg | robust_global_reg | 【粗全局配准门面】(RoughGlobalReg) | 仓库内 | ScanInfo→FramedCloud→RobustGlobalReg；位姿折回 |
 | rough_global_reg | point_cloud_io | 【FramedCloud】(load) | 仓库内 | 门面读 `ScanInfo.lasFn_` |
 | rough_global_reg | registration_type | 【扫描信息】/【配准边结果】 | 仓库内 | 输入 ScanInfo，输出 AlignResult |
-| fastreg_filter | logging / OpenCV / Eigen / OpenMP | 【全景深度差分滤波】/【空间透视差分滤波】 | 仓库内/外部 | 深度图邻域差分统计异常/重叠率（STATIC） |
-| global_matrix_file | common / logging / RapidJSON | 【全局位姿文件读写】(GlobalMatrixFileIO) | 仓库内/外部 | 多站全局位姿 JSON loading/saving（STATIC） |
-| depth_map_tool | common / OpenCV / PCL / TBB | 【深度图工具】(DepthMapTool) | 仓库内/外部 | 点云→全景深度与格式转换（STATIC） |
+| fastreg_filter | logging / OpenCV / Eigen / OpenMP | 【全景深度差分滤波】/【空间透视差分滤波】 | 仓库内/外部 | 深度图邻域差分统计异常/重叠率（SHARED） |
+| global_matrix_file | common / logging / RapidJSON | 【全局位姿文件读写】(GlobalMatrixFileIO) | 仓库内/外部 | 多站全局位姿 JSON loading/saving（SHARED） |
+| depth_map_tool | common / OpenCV / PCL / TBB | 【深度图工具】(DepthMapTool) | 仓库内/外部 | 点云→全景深度与格式转换（SHARED） |
 | octree | PCL / Eigen / TBB | 【体素真 Medoid 索引下采样】等 | 外部 | 哈希体素 Medoid / FastOctree / 中心近邻（INTERFACE） |
 | overlap_estimation | PCL / Eigen / OpenMP | 【体素重叠估计】/【配准重叠子集提取】 | 外部 | 点云重叠度量与子集抽取（INTERFACE） |
 | resolution_estimate | logging / registration_type / PCL / Eigen | 【分辨率估计】/【分位数分辨率估计】 | 仓库内/外部 | 站心径向深度 → 推荐体素（SHARED） |
@@ -51,7 +52,7 @@ ScanRegister（CMake 包 `scan_register`）跨模块互用速查。细则见 [`r
 | **registration_initializer** | [`dictionaries/配准初始化_Dictionary.md`](dictionaries/配准初始化_Dictionary.md) | [`modules/配准初始化.md`](modules/配准初始化.md) |
 | **point_cloud_io** | [`dictionaries/点云IO_Dictionary.md`](dictionaries/点云IO_Dictionary.md) | [`modules/点云IO.md`](modules/点云IO.md) |
 | robust_matcher 等（`robust_rough/`） | [`dictionaries/鲁棒粗匹配_Dictionary.md`](dictionaries/鲁棒粗匹配_Dictionary.md) | [`modules/鲁棒粗匹配.md`](modules/鲁棒粗匹配.md) |
-| basic_icp 等（`robust_refine/`） | [`dictionaries/鲁棒精配_Dictionary.md`](dictionaries/鲁棒精配_Dictionary.md) | [`modules/鲁棒精配.md`](modules/鲁棒精配.md) |
+| basic_icp 等（`robust_refine/`）+ **trim_icp**（仓库根） | [`dictionaries/鲁棒精配_Dictionary.md`](dictionaries/鲁棒精配_Dictionary.md) | [`modules/鲁棒精配.md`](modules/鲁棒精配.md) |
 | robust_global_reg | [`dictionaries/粗全局配准_Dictionary.md`](dictionaries/粗全局配准_Dictionary.md) | [`modules/粗全局配准.md`](modules/粗全局配准.md) |
 | **rough_global_reg** | 同上 | 同上 |
 | **fastreg_filter** | [`dictionaries/FastReg滤波_Dictionary.md`](dictionaries/FastReg滤波_Dictionary.md) | [`modules/FastReg滤波.md`](modules/FastReg滤波.md) |

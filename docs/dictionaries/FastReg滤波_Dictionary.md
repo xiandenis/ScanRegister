@@ -1,7 +1,7 @@
 # FastReg滤波_Dictionary
 
 覆盖模块：`fastreg_filter`（深度图差分滤波：异常率 / 重叠率 / 深度有效率）。  
-**产物约定**：`fastreg_filter` 为 **STATIC**（模块 CMake 约定）。
+**产物约定**：`fastreg_filter` 为 **SHARED**（仓库默认）。
 
 与点云体素下采样、全景深度图估计（`DepthMapEstimator`）、以及 `depth_map_tool`（深度生成/格式转换）无关：本模块只对已对齐的深度图做邻域差分统计。
 

@@ -135,10 +135,10 @@ namespace Ddx
 	Eigen::Vector3d
 	enu2geodetic0(const double& xEast, const double& yNorth, const double& zUp, const double& lon0, const double& lat0, const double& h0)
 	{
-		//µÚÎå²½,µØĞÄµØ¹Ì×ø±êÏµÏÂ
-		double m_fRyLatitude[3][3];		//Î³¶ÈÈÆYÖáĞı×ªÒıÆğµÄ×ø±ê×ª»»¾ØÕó
-		double m_fRzLongitude[3][3];	//¾­¶ÈÈÆZÖáÒıÆğµÄ×ø±ê×ª»»¾ØÕó
-		double m_fNavToEcef[3][3];		//µ¼º½µ½µØĞÄµØ¹Ì×ø±êÏµµÄ×ø±ê×ª»»¾ØÕó
+		//ç¬¬äº”æ­¥,åœ°å¿ƒåœ°å›ºåæ ‡ç³»ä¸‹
+		double m_fRyLatitude[3][3];		//çº¬åº¦ç»•Yè½´æ—‹è½¬å¼•èµ·çš„åæ ‡è½¬æ¢çŸ©é˜µ
+		double m_fRzLongitude[3][3];	//ç»åº¦ç»•Zè½´å¼•èµ·çš„åæ ‡è½¬æ¢çŸ©é˜µ
+		double m_fNavToEcef[3][3];		//å¯¼èˆªåˆ°åœ°å¿ƒåœ°å›ºåæ ‡ç³»çš„åæ ‡è½¬æ¢çŸ©é˜µ
 		double m_fEcefOffset[3];
 
 		double m_fInNavCoor[3];
@@ -191,10 +191,10 @@ namespace Ddx
 			}
 		}
 
-		//×ø±ê×ª»»±äÁ¿³õÊ¼»¯
-		double m_fEarthA = 6378137.0;	//µØÇò³¤°ë¾¶
-		double m_fEarthB = 6356752.3142;	//µØÇò³¤°ë¾¶
-		double m_fEarthE = sqrt((m_fEarthA * m_fEarthA - m_fEarthB * m_fEarthB) / (m_fEarthA * m_fEarthA));	//µÚÒ»Æ«ĞÄÂÊÆ½·½6.69437999013e-03
+		//åæ ‡è½¬æ¢å˜é‡åˆå§‹åŒ–
+		double m_fEarthA = 6378137.0;	//åœ°çƒé•¿åŠå¾„
+		double m_fEarthB = 6356752.3142;	//åœ°çƒé•¿åŠå¾„
+		double m_fEarthE = sqrt((m_fEarthA * m_fEarthA - m_fEarthB * m_fEarthB) / (m_fEarthA * m_fEarthA));	//ç¬¬ä¸€åå¿ƒç‡å¹³æ–¹6.69437999013e-03
 		double  m_fEarthE2 = m_fEarthE * m_fEarthE;
 
 		double fN = m_fEarthA / pow(1 - m_fEarthE2 * pow(sin(lat0), 2.0), 0.5);

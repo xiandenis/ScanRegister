@@ -1,5 +1,5 @@
-# Explicit STATIC (module CMake as provided / coarse global registration leaf).
-add_library(robust_global_reg STATIC
+# Default SHARED per repo shared-library policy.
+add_library(robust_global_reg SHARED
   robGlob_reg_parameter.cpp
   t_coarse_check.cpp
   robust_global_reg.cpp
@@ -25,7 +25,10 @@ target_link_libraries(robust_global_reg PUBLIC
   Eigen3::Eigen
 )
 
-set_target_properties(robust_global_reg PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(robust_global_reg PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  WINDOWS_EXPORT_ALL_SYMBOLS ON
+)
 
 scan_register_apply_compat(robust_global_reg)
 scan_register_apply_openmp(robust_global_reg)

@@ -20,15 +20,15 @@
 | [`file_system/`](file_system/) | 可移植文件系统与通配（SHARED） |
 | [`logging/`](logging/) | 进程内统一日志（SHARED，spdlog） |
 | [`graph/`](graph/) | 通用图算法 MST / 连通分量 / Dijkstra（INTERFACE，纯 std） |
-| [`fastreg_filter/`](fastreg_filter/) | FastReg 深度图差分滤波（**STATIC**：全景 / 空间透视） |
-| [`global_matrix_file/`](global_matrix_file/) | 多站全局位姿 JSON 读写（**STATIC**） |
-| [`depth_map_tool/`](depth_map_tool/) | 全景深度图生成与格式转换（**STATIC**） |
+| [`fastreg_filter/`](fastreg_filter/) | FastReg 深度图差分滤波（**SHARED**：全景 / 空间透视） |
+| [`global_matrix_file/`](global_matrix_file/) | 多站全局位姿 JSON 读写（**SHARED**） |
+| [`depth_map_tool/`](depth_map_tool/) | 全景深度图生成与格式转换（**SHARED**） |
 | [`octree/`](octree/) | 哈希体素 Medoid / FastOctree / 中心近邻八叉树（INTERFACE） |
 | [`overlap_estimation/`](overlap_estimation/) | 体素重叠估计与配准重叠子集提取（INTERFACE） |
 | [`robust_rough/`](robust_rough/) | 鲁棒粗匹配：`robust_matcher` / `teaser` / `robin` / `pmc` 等（**STATIC** / INTERFACE） |
 | [`robust_refine/`](robust_refine/) | 鲁棒精配：`basic_icp` / `small_gicp` / `genz_icp` / `fast_gicp`（**STATIC** / INTERFACE） |
 | [`point_cloud_io/`](point_cloud_io/) | 点云多格式 I/O（SHARED；由调用方/测试链接） |
-| [`robust_global_reg/`](robust_global_reg/) | 粗全局配准（**STATIC**；纯内存入口） |
+| [`robust_global_reg/`](robust_global_reg/) | 粗全局配准（**SHARED**；纯内存入口） |
 | [`cmake/`](cmake/) | 依赖探测、compat、`find_package(scan_register)` 安装导出 |
 | [`docs/`](docs/) | Hub/Spoke 字典与模块说明 |
 

@@ -1,5 +1,5 @@
-# Explicit STATIC (business facade over robust_global_reg; matches domain leaf convention).
-add_library(rough_global_reg STATIC
+# Default SHARED per repo shared-library policy.
+add_library(rough_global_reg SHARED
   rough_global_reg.cpp
 )
 
@@ -17,7 +17,10 @@ target_link_libraries(rough_global_reg PUBLIC
   logging
 )
 
-set_target_properties(rough_global_reg PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(rough_global_reg PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  WINDOWS_EXPORT_ALL_SYMBOLS ON
+)
 
 scan_register_apply_compat(rough_global_reg)
 scan_register_apply_openmp(rough_global_reg)

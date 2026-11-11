@@ -1,5 +1,5 @@
-# Explicit STATIC (module CMake as provided / global pose JSON I/O leaf).
-add_library(global_matrix_file STATIC
+# Default SHARED per repo shared-library policy.
+add_library(global_matrix_file SHARED
   global_matrix_file_io.cpp
 )
 
@@ -22,7 +22,10 @@ target_link_libraries(global_matrix_file PUBLIC
   Eigen3::Eigen
 )
 
-set_target_properties(global_matrix_file PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(global_matrix_file PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  WINDOWS_EXPORT_ALL_SYMBOLS ON
+)
 
 scan_register_apply_compat(global_matrix_file)
 

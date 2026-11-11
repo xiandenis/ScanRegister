@@ -1,7 +1,7 @@
 # 深度图工具_Dictionary
 
 覆盖模块：`depth_map_tool`（全景深度图生成与格式转换）。  
-**产物约定**：`depth_map_tool` 为 **STATIC**（模块 CMake 约定）。
+**产物约定**：`depth_map_tool` 为 **SHARED**（仓库默认）。
 
 与 `fastreg_filter`（深度差分统计）、计划中的 `DepthMapEstimator`（估计/缓存）区分：本模块提供点云→全景深度投影，以及 float/uchar 深度图格式转换与水平环带扩展。
 
